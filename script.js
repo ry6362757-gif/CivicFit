@@ -316,7 +316,10 @@ function setupMobileNav() {
     }
 }
 
-// ============ FALLBACK JANSEVAAI (NO API KEY) ============
+// ============ GEMINI JANSEVAAI (Google AI Studio) ============
+const GEMINI_API_KEY = 'AIzaSyD4hcDPKUgQjlZhjx1SuhIGprQ-F_xuXhc'; // ⚠️ Replace with your Gemini API key
+const GEMINI_MODEL = 'gemini-2.0-flash'; // or 'gemini-1.5-flash', 'gemini-1.5-pro'
+
 const chatbotMessages = document.getElementById('chatbotMessages');
 const chatbotInput = document.getElementById('chatbotInput');
 const chatbotSend = document.getElementById('chatbotSend');
@@ -353,42 +356,51 @@ function removeLoading() {
     if (loading) loading.remove();
 }
 
-// Simple rule-based fallback
-function getFallbackReply(msg) {
-    const lower = msg.toLowerCase();
-    if (lower.includes('complaint') || lower.includes('file')) {
-        return "To file a complaint, go to 'File Complaint' page, select your city, category, describe the issue, and attach a photo if needed. You'll receive a unique Complaint ID.";
-    } else if (lower.includes('track') || lower.includes('status')) {
-        return "You can track your complaint using the 'Track' page. Just enter your Complaint ID and you'll see the current status, a heatmap, and any uploaded photo.";
-    } else if (lower.includes('city') || lower.includes('cities')) {
-        return "CivicFit covers five cities: Nallasopara, Virar, Vasai, Mira Road, and Bhayandar.";
-    } else if (lower.includes('hello') || lower.includes('hi')) {
-        return "Hello! I'm JansevaAI, your civic assistant. How can I help you today?";
-    } else {
-        return "I'm here to help with civic issues, complaint filing, and tracking. Ask me anything about CivicFit!";
+async function sendToGemini(userMessage) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                system_instruction: {
+                    parts: [{ text: 'You are JansevaAI, the helpful assistant for CivicFit – a public grievance portal for Indian cities Nallasopara, Virar, Vasai, Mira Road, and Bhayandar. Help users with complaint filing, tracking, and civic issues. Keep responses friendly and concise.' }]
+                },
+                contents: [
+                    {
+                        role: 'user',
+                        parts: [{ text: userMessage }]
+                    }
+                ]
+            })
+        });
+
+        const data = await response.json();
+        removeLoading();
+
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+            const botReply = data.candidates[0].content.parts[0].text;
+            addMessage(botReply, 'bot');
+        } else {
+            addMessage("Sorry, I couldn't process that. Please try again.", 'bot');
+        }
+    } catch (error) {
+        removeLoading();
+        addMessage("Network error. Please check your internet and API key.", 'bot');
     }
 }
 
-// Simulate async response
-function sendFallbackReply(userMessage) {
-    addMessage(userMessage, 'user');
-    chatbotInput.value = '';
-    showLoading();
-    setTimeout(() => {
-        removeLoading();
-        const reply = getFallbackReply(userMessage);
-        addMessage(reply, 'bot');
-    }, 1000);
-}
-
+// Event listeners
 chatbotSend.addEventListener('click', () => {
     const message = chatbotInput.value.trim();
     if (!message) return;
-    sendFallbackReply(message);
+    addMessage(message, 'user');
+    chatbotInput.value = '';
+    showLoading();
+    sendToGemini(message);
 });
 
 chatbotInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        chatbotSend.click();
-    }
+    if (e.key === 'Enter') chatbotSend.click();
 });
