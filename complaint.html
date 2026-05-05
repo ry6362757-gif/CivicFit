@@ -25,7 +25,7 @@
     <section class="complaint-page">
         <div class="complaint-container">
             <h2><i class="fas fa-pen-alt"></i> File a Complaint</h2>
-            <p class="subtitle">Report an issue in Nallasopara, Virar, or Vasai</p>
+            <p class="subtitle">Report an issue in any of our 5 cities</p>
             <form id="complaintForm">
                 <div class="form-group">
                     <label>Select City <span style="color:#e63946;">*</span></label>
@@ -34,6 +34,8 @@
                         <option value="Nallasopara">Nallasopara</option>
                         <option value="Virar">Virar</option>
                         <option value="Vasai">Vasai</option>
+                        <option value="Mira Road">Mira Road</option>
+                        <option value="Bhayandar">Bhayandar</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -56,12 +58,43 @@
                     <label>Description <span style="color:#e63946;">*</span></label>
                     <textarea id="description" placeholder="Describe the issue in detail..." required></textarea>
                 </div>
+
+                <div class="form-group">
+                    <label>Proof Photo <span style="color:#e63946;">*</span></label>
+                    <div class="photo-upload-area" id="photoUploadArea">
+                        <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;">
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <i class="fas fa-camera"></i>
+                            <span>Click or tap to take a photo</span>
+                        </div>
+                        <img id="photoPreview" style="display:none; max-width:100%; max-height:200px; border-radius:12px;">
+                        <button type="button" class="remove-photo-btn" id="removePhotoBtn" style="display:none;"><i class="fas fa-times"></i> Remove</button>
+                    </div>
+                </div>
+
                 <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Submit Complaint</button>
             </form>
             <div class="success-msg" id="successMessage" style="display:none;"></div>
         </div>
     </section>
     <footer><p>&copy; 2026 <strong>CivicFit</strong></p></footer>
+
+    <!-- JansevaAI Chatbot -->
+    <div class="chatbot-container" id="chatbotContainer">
+        <button class="chatbot-toggle" id="chatbotToggle"><i class="fas fa-comment-dots"></i> JansevaAI</button>
+        <div class="chatbot-window" id="chatbotWindow" style="display:none;">
+            <div class="chatbot-header">
+                <span><i class="fas fa-robot"></i> JansevaAI</span>
+                <button class="chatbot-close" id="chatbotClose">&times;</button>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages"></div>
+            <div class="chatbot-input-area">
+                <input type="text" id="chatbotInput" placeholder="Ask me anything..." />
+                <button id="chatbotSend"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
