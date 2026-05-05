@@ -1,5 +1,4 @@
-
-// ============ Storage ============
+// ============ STORAGE ============
 const STORAGE_KEY = 'civicfit_complaints';
 
 function getDefaultComplaints() {
@@ -33,7 +32,7 @@ function saveComplaints(complaints) {
 
 let complaints = loadComplaints();
 
-// ============ Helpers ============
+// ============ HELPERS ============
 function getCityStats(cityName) {
     const cityComplaints = complaints.filter(c => c.city === cityName);
     const total = cityComplaints.length;
@@ -55,7 +54,12 @@ function getDensityLevel(total) {
     return 'low';
 }
 
-// ============ UI Updates ============
+function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+}
+
+// ============ UPDATE UI ============
 function updateHomepage() {
     const totalStats = getTotalStats();
     setText('totalComplaints', totalStats.total);
@@ -113,12 +117,7 @@ function updateDashboard() {
     }
 }
 
-function setText(id, text) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = text;
-}
-
-// ============ Photo handling ============
+// ============ PHOTO UPLOAD ============
 let selectedPhotoDataUrl = null;
 
 function setupPhotoUpload() {
@@ -156,7 +155,7 @@ function setupPhotoUpload() {
     });
 }
 
-// ============ Complaint Form ============
+// ============ COMPLAINT FORM ============
 function setupComplaintForm() {
     const form = document.getElementById('complaintForm');
     if (!form) return;
@@ -195,7 +194,7 @@ function setupComplaintForm() {
         successDiv.style.display = 'block';
         successDiv.innerHTML = `<i class="fas fa-check-circle"></i> Complaint filed!<br><strong>ID: ${newId}</strong><br>Use this to track.`;
         form.reset();
-        // reset photo
+
         selectedPhotoDataUrl = null;
         const preview = document.getElementById('photoPreview');
         const placeholder = document.getElementById('uploadPlaceholder');
@@ -203,11 +202,12 @@ function setupComplaintForm() {
         if (preview) preview.style.display = 'none';
         if (placeholder) placeholder.style.display = 'block';
         if (removeBtn) removeBtn.style.display = 'none';
+
         setTimeout(() => successDiv.style.display = 'none', 8000);
     });
 }
 
-// ============ Leaflet Map & Heatmap ============
+// ============ MAP ============
 function ensureMap(complaint) {
     const mapContainer = document.getElementById('mapContainer');
     if (!mapContainer) return;
@@ -215,28 +215,20 @@ function ensureMap(complaint) {
 
     const map = L.map('mapContainer').setView([complaint.lat, complaint.lng], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution: '&copy; OpenStreetMap',
         maxZoom: 19
     }).addTo(map);
 
     const cityComplaints = complaints.filter(c => c.city === complaint.city);
     const heatPoints = cityComplaints.map(c => [c.lat, c.lng, c.status === 'resolved' ? 0.4 : 1.0]);
     if (heatPoints.length > 0) {
-        L.heatLayer(heatPoints, {
-            radius: 30,
-            blur: 20,
-            maxZoom: 1,
-            gradient: { 0.2: 'blue', 0.4: 'cyan', 0.6: 'lime', 0.8: 'yellow', 1.0: 'red' }
-        }).addTo(map);
+        L.heatLayer(heatPoints, { radius: 30, blur: 20, maxZoom: 1, gradient: { 0.2: 'blue', 0.4: 'cyan', 0.6: 'lime', 0.8: 'yellow', 1.0: 'red' } }).addTo(map);
     }
 
-    L.marker([complaint.lat, complaint.lng])
-        .addTo(map)
-        .bindPopup(`<b>${complaint.id}</b><br>${complaint.category}<br>${complaint.description}`)
-        .openPopup();
+    L.marker([complaint.lat, complaint.lng]).addTo(map).bindPopup(`<b>${complaint.id}</b><br>${complaint.category}<br>${complaint.description}`).openPopup();
 }
 
-// ============ Tracking ============
+// ============ TRACKING ============
 function setupTracking() {
     const btn = document.getElementById('trackBtn');
     if (!btn) return;
@@ -270,7 +262,7 @@ function setupTracking() {
 
         const photoDiv = document.getElementById('complaintPhoto');
         if (complaint.photo) {
-            photoDiv.innerHTML = `<img src="${complaint.photo}" alt="Proof" style="max-width:100%; max-height:250px; border-radius:12px; box-shadow:var(--shadow);">`;
+            photoDiv.innerHTML = `<img src="${complaint.photo}" alt="Proof" style="max-width:100%; max-height:250px; border-radius:12px;">`;
         } else {
             photoDiv.innerHTML = '';
         }
@@ -293,7 +285,7 @@ function setupTracking() {
     });
 }
 
-// ============ Simulate Progress ============
+// ============ SIMULATE PROGRESS ============
 setInterval(() => {
     const pending = complaints.filter(c => c.status === 'received' || c.status === 'in-progress');
     if (pending.length > 0) {
@@ -306,7 +298,7 @@ setInterval(() => {
     }
 }, 30000);
 
-// ============ Mobile Nav ============
+// ============ MOBILE NAV ============
 function setupMobileNav() {
     const hamburger = document.getElementById('hamburger');
     const navLinks = document.getElementById('navLinks');
@@ -316,91 +308,68 @@ function setupMobileNav() {
     }
 }
 
-// ============ GEMINI JANSEVAAI (Google AI Studio) ============
-const GEMINI_API_KEY = 'AIzaSyD4hcDPKUgQjlZhjx1SuhIGprQ-F_xuXhc'; // ⚠️ Replace with your Gemini API key
-const GEMINI_MODEL = 'gemini-2.0-flash'; // or 'gemini-1.5-flash', 'gemini-1.5-pro'
+// ============ ULTRA-SIMPLE JANSEVAAI (no API, always works) ============
+(function() {
+    const chatbotMessages = document.getElementById('chatbotMessages');
+    const chatbotInput = document.getElementById('chatbotInput');
+    const chatbotSend = document.getElementById('chatbotSend');
+    const chatbotToggle = document.getElementById('chatbotToggle');
+    const chatbotWindow = document.getElementById('chatbotWindow');
+    const chatbotClose = document.getElementById('chatbotClose');
 
-const chatbotMessages = document.getElementById('chatbotMessages');
-const chatbotInput = document.getElementById('chatbotInput');
-const chatbotSend = document.getElementById('chatbotSend');
-const chatbotToggle = document.getElementById('chatbotToggle');
-const chatbotWindow = document.getElementById('chatbotWindow');
-const chatbotClose = document.getElementById('chatbotClose');
+    if (!chatbotToggle) return; // Chatbot not on this page, skip
 
-chatbotToggle.addEventListener('click', () => {
-    chatbotWindow.style.display = chatbotWindow.style.display === 'none' ? 'flex' : 'none';
-});
-chatbotClose.addEventListener('click', () => {
-    chatbotWindow.style.display = 'none';
-});
+    chatbotToggle.addEventListener('click', () => {
+        chatbotWindow.style.display = chatbotWindow.style.display === 'none' ? 'flex' : 'none';
+    });
+    chatbotClose.addEventListener('click', () => {
+        chatbotWindow.style.display = 'none';
+    });
 
-function addMessage(text, sender) {
-    const msgDiv = document.createElement('div');
-    msgDiv.classList.add('message', sender);
-    msgDiv.textContent = text;
-    chatbotMessages.appendChild(msgDiv);
-    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-}
-
-function showLoading() {
-    const loadingDiv = document.createElement('div');
-    loadingDiv.classList.add('message', 'loading');
-    loadingDiv.id = 'loadingMessage';
-    loadingDiv.textContent = 'JansevaAI is typing...';
-    chatbotMessages.appendChild(loadingDiv);
-    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-}
-
-function removeLoading() {
-    const loading = document.getElementById('loadingMessage');
-    if (loading) loading.remove();
-}
-
-async function sendToGemini(userMessage) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${gemini-2.0-flash}:generateContent?key=${AIzaSyD4hcDPKUgQjlZhjx1SuhIGprQ-F_xuXhc}`;
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                system_instruction: {
-                    parts: [{ text: 'You are JansevaAI, the helpful assistant for CivicFit – a public grievance portal for Indian cities Nallasopara, Virar, Vasai, Mira Road, and Bhayandar. Help users with complaint filing, tracking, and civic issues. Keep responses friendly and concise.' }]
-                },
-                contents: [
-                    {
-                        role: 'user',
-                        parts: [{ text: userMessage }]
-                    }
-                ]
-            })
-        });
-
-        const data = await response.json();
-        removeLoading();
-
-        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-            const botReply = data.candidates[0].content.parts[0].text;
-            addMessage(botReply, 'bot');
-        } else {
-            addMessage("Sorry, I couldn't process that. Please try again.", 'bot');
-        }
-    } catch (error) {
-        removeLoading();
-        addMessage("Network error. Please check your internet and API key.", 'bot');
+    function addMsg(text, sender) {
+        const div = document.createElement('div');
+        div.className = 'message ' + sender;
+        div.textContent = text;
+        chatbotMessages.appendChild(div);
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
     }
-}
 
-// Event listeners
-chatbotSend.addEventListener('click', () => {
-    const message = chatbotInput.value.trim();
-    if (!message) return;
-    addMessage(message, 'user');
-    chatbotInput.value = '';
-    showLoading();
-    sendToGemini(message);
-});
+    function reply(message) {
+        const msg = message.toLowerCase();
+        let answer;
+        if (msg.includes('hello') || msg.includes('hi')) {
+            answer = "Hello! I'm JansevaAI. How can I help you with CivicFit?";
+        } else if (msg.includes('complaint') || msg.includes('file')) {
+            answer = "Go to 'File Complaint' page, select your city, describe the issue, and attach a photo. You'll get a Complaint ID to track it.";
+        } else if (msg.includes('track') || msg.includes('status')) {
+            answer = "You can track your complaint using the 'Track' page. Enter your Complaint ID to see the status, photo, and a heatmap.";
+        } else if (msg.includes('city') || msg.includes('cities')) {
+            answer = "CivicFit covers Nallasopara, Virar, Vasai, Mira Road, and Bhayandar.";
+        } else {
+            answer = "I'm here to answer questions about filing complaints, tracking progress, or the cities we serve. Ask me anything!";
+        }
+        addMsg(answer, 'bot');
+    }
 
-chatbotInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') chatbotSend.click();
+    chatbotSend.addEventListener('click', () => {
+        const text = chatbotInput.value.trim();
+        if (!text) return;
+        addMsg(text, 'user');
+        chatbotInput.value = '';
+        reply(text);
+    });
+
+    chatbotInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') chatbotSend.click();
+    });
+})();
+
+// ============ INIT ============
+document.addEventListener('DOMContentLoaded', () => {
+    setupPhotoUpload();
+    updateHomepage();
+    setupComplaintForm();
+    setupTracking();
+    updateDashboard();
+    setupMobileNav();
 });
