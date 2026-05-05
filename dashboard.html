@@ -37,6 +37,23 @@
         </div>
     </section>
     <footer><p>&copy; 2026 <strong>CivicFit</strong></p></footer>
+
+    <!-- JansevaAI Chatbot -->
+    <div class="chatbot-container" id="chatbotContainer">
+        <button class="chatbot-toggle" id="chatbotToggle"><i class="fas fa-comment-dots"></i> JansevaAI</button>
+        <div class="chatbot-window" id="chatbotWindow" style="display:none;">
+            <div class="chatbot-header">
+                <span><i class="fas fa-robot"></i> JansevaAI</span>
+                <button class="chatbot-close" id="chatbotClose">&times;</button>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages"></div>
+            <div class="chatbot-input-area">
+                <input type="text" id="chatbotInput" placeholder="Ask me anything..." />
+                <button id="chatbotSend"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
