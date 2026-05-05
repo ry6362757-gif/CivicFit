@@ -308,7 +308,7 @@ function setupMobileNav() {
     }
 }
 
-// ============ ULTRA-SIMPLE JANSEVAAI (no API, always works) ============
+// ============ SMART BUILT‑IN JANSEVAAI (website only) ============
 (function() {
     const chatbotMessages = document.getElementById('chatbotMessages');
     const chatbotInput = document.getElementById('chatbotInput');
@@ -334,42 +334,74 @@ function setupMobileNav() {
         chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
     }
 
-    function reply(message) {
-        const msg = message.toLowerCase();
-        let answer;
-        if (msg.includes('hello') || msg.includes('hi')) {
-            answer = "Hello! I'm JansevaAI. How can I help you with CivicFit?";
-        } else if (msg.includes('complaint') || msg.includes('file')) {
-            answer = "Go to 'File Complaint' page, select your city, describe the issue, and attach a photo. You'll get a Complaint ID to track it.";
-        } else if (msg.includes('track') || msg.includes('status')) {
-            answer = "You can track your complaint using the 'Track' page. Enter your Complaint ID to see the status, photo, and a heatmap.";
-        } else if (msg.includes('city') || msg.includes('cities')) {
-            answer = "CivicFit covers Nallasopara, Virar, Vasai, Mira Road, and Bhayandar.";
-        } else {
-            answer = "I'm here to answer questions about filing complaints, tracking progress, or the cities we serve. Ask me anything!";
+    // Smart website‑only reply engine
+    function getReply(userMsg) {
+        const msg = userMsg.toLowerCase().trim();
+
+        // ----- Help & general info -----
+        if (msg.includes('help') || msg.includes('what can you do')) {
+            return "I can help you with CivicFit – filing complaints, tracking them, checking city stats, and using the dashboard. Ask me anything about the website!";
         }
-        addMsg(answer, 'bot');
+        if (msg.includes('hello') || msg.includes('hi') || msg.includes('hey')) {
+            return "Hello! I'm JansevaAI, your CivicFit assistant. How can I help you with the website?";
+        }
+
+        // ----- Filing complaints -----
+        if (msg.includes('file') || msg.includes('lodge') || msg.includes('register') || msg.includes('new complaint')) {
+            return "To file a complaint, go to the 'File Complaint' page. Select your city, choose a category, describe the issue, and click to upload a photo (optional). You'll receive a unique Complaint ID.";
+        }
+        if (msg.includes('photo') || msg.includes('picture') || msg.includes('camera')) {
+            return "You can attach a photo by clicking the upload area in the complaint form. On mobile, it will open your camera automatically.";
+        }
+        if (msg.includes('city') && (msg.includes('select') || msg.includes('choose'))) {
+            return "We cover five cities: Nallasopara, Virar, Vasai, Mira Road, and Bhayandar. Pick yours from the dropdown in the complaint form.";
+        }
+
+        // ----- Tracking -----
+        if (msg.includes('track') || msg.includes('status') || msg.includes('progress')) {
+            return "To track a complaint, go to the 'Track' page. Enter your Complaint ID (e.g., CID-247952) to see the current stage (Received → In Progress → Resolved), any photo you uploaded, and a heatmap of your city.";
+        }
+        if (msg.includes('complaint id') || msg.includes('where is my id')) {
+            return "Your Complaint ID is shown after you submit a complaint. It looks like CID-123456. Use it on the Track page.";
+        }
+
+        // ----- Cities coverage -----
+        if (msg.includes('city') || msg.includes('cities') || msg.includes('area') || msg.includes('coverage')) {
+            return "CivicFit serves Nallasopara, Virar, Vasai, Mira Road, and Bhayandar. You can see live complaint densities on the homepage and dashboard.";
+        }
+
+        // ----- Dashboard & Stats -----
+        if (msg.includes('dashboard') || msg.includes('stats') || msg.includes('statistics')) {
+            return "The Live Dashboard shows total complaints, resolved vs pending, complaints by category, and risk areas. It updates in real time.";
+        }
+        if (msg.includes('heatmap') || msg.includes('map')) {
+            return "The heatmap shows high‑risk areas in red, medium in yellow, and low in blue. You can view it on the Track page after entering a Complaint ID.";
+        }
+
+        // ----- How it works -----
+        if (msg.includes('how') && (msg.includes('work') || msg.includes('use'))) {
+            return "CivicFit works in 4 steps: 1) File a complaint, 2) Get a Complaint ID, 3) Track progress & view heatmap, 4) Resolution by authorities.";
+        }
+
+        // ----- About / purpose -----
+        if (msg.includes('about') || msg.includes('purpose') || msg.includes('what is civicfit')) {
+            return "CivicFit bridges citizens and local government. You can report public issues, track their resolution, and see problem areas across five cities.";
+        }
+
+        // ----- Default (reject unrelated questions) -----
+        return "I'm JansevaAI, here to help only with the CivicFit website. I can answer questions about filing complaints, tracking, cities, dashboard, or how the site works. Please ask me something related to that.";
     }
 
     chatbotSend.addEventListener('click', () => {
-        const text = chatbotInput.value.trim();
-        if (!text) return;
-        addMsg(text, 'user');
+        const userText = chatbotInput.value.trim();
+        if (!userText) return;
+        addMsg(userText, 'user');
         chatbotInput.value = '';
-        reply(text);
+        const reply = getReply(userText);
+        addMsg(reply, 'bot');
     });
 
     chatbotInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') chatbotSend.click();
     });
 })();
-
-// ============ INIT ============
-document.addEventListener('DOMContentLoaded', () => {
-    setupPhotoUpload();
-    updateHomepage();
-    setupComplaintForm();
-    setupTracking();
-    updateDashboard();
-    setupMobileNav();
-});
