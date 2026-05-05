@@ -357,7 +357,7 @@ function removeLoading() {
 }
 
 async function sendToGemini(userMessage) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${gemini-2.0-flash}:generateContent?key=${AIzaSyD4hcDPKUgQjlZhjx1SuhIGprQ-F_xuXhc}`;
 
     try {
         const response = await fetch(url, {
