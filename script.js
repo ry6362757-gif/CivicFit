@@ -316,10 +316,7 @@ function setupMobileNav() {
     }
 }
 
-// ============ JANSEVAAI CHATBOT ============
-const DEEPSEEK_API_KEY = 'sk-68ac71336e5a4f9183f9035b220abb97';
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
-
+// ============ FALLBACK JANSEVAAI (NO API KEY) ============
 const chatbotMessages = document.getElementById('chatbotMessages');
 const chatbotInput = document.getElementById('chatbotInput');
 const chatbotSend = document.getElementById('chatbotSend');
@@ -356,67 +353,42 @@ function removeLoading() {
     if (loading) loading.remove();
 }
 
-async function sendToDeepSeek(userMessage) {
-    try {
-        const response = await fetch(sk-68ac71336e5a4f9183f9035b220abb97, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sk-68ac71336e5a4f9183f9035b220abb97}`
-            },
-            body: JSON.stringify({
-                model: 'deepseek-chat',   // try 'deepseek-reasoner' if this fails
-                messages: [
-                    { role: 'system', content: 'You are JansevaAI, the helpful assistant for CivicFit – a public grievance portal for Indian cities Nallasopara, Virar, Vasai, Mira Road, and Bhayandar. Help users with complaint filing, tracking, and civic issues. Keep responses friendly and concise.' },
-                    { role: 'user', content: userMessage }
-                ],
-                temperature: 0.7,
-                max_tokens: 500
-            })
-        });
-
-        // Log the full response for debugging (open the console in your browser)
-        console.log('API response status:', response.status);
-        const data = await response.json();
-        console.log('API response data:', data);
-
-        removeLoading();
-
-        if (data.choices && data.choices[0]) {
-            addMessage(data.choices[0].message.content, 'bot');
-        } else if (data.error) {
-            addMessage(`Error: ${data.error.message}`, 'bot');
-        } else {
-            addMessage("Sorry, I didn't understand that response. Check the console for details.", 'bot');
-        }
-    } catch (error) {
-        removeLoading();
-        console.error('Fetch error:', error);
-        addMessage("Network error. Please check your internet connection.", 'bot');
+// Simple rule-based fallback
+function getFallbackReply(msg) {
+    const lower = msg.toLowerCase();
+    if (lower.includes('complaint') || lower.includes('file')) {
+        return "To file a complaint, go to 'File Complaint' page, select your city, category, describe the issue, and attach a photo if needed. You'll receive a unique Complaint ID.";
+    } else if (lower.includes('track') || lower.includes('status')) {
+        return "You can track your complaint using the 'Track' page. Just enter your Complaint ID and you'll see the current status, a heatmap, and any uploaded photo.";
+    } else if (lower.includes('city') || lower.includes('cities')) {
+        return "CivicFit covers five cities: Nallasopara, Virar, Vasai, Mira Road, and Bhayandar.";
+    } else if (lower.includes('hello') || lower.includes('hi')) {
+        return "Hello! I'm JansevaAI, your civic assistant. How can I help you today?";
+    } else {
+        return "I'm here to help with civic issues, complaint filing, and tracking. Ask me anything about CivicFit!";
     }
+}
+
+// Simulate async response
+function sendFallbackReply(userMessage) {
+    addMessage(userMessage, 'user');
+    chatbotInput.value = '';
+    showLoading();
+    setTimeout(() => {
+        removeLoading();
+        const reply = getFallbackReply(userMessage);
+        addMessage(reply, 'bot');
+    }, 1000);
 }
 
 chatbotSend.addEventListener('click', () => {
     const message = chatbotInput.value.trim();
     if (!message) return;
-    addMessage(message, 'user');
-    chatbotInput.value = '';
-    showLoading();
-    sendToDeepSeek(message);
+    sendFallbackReply(message);
 });
 
 chatbotInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         chatbotSend.click();
     }
-});
-
-// ============ Init ============
-document.addEventListener('DOMContentLoaded', () => {
-    setupPhotoUpload();
-    updateHomepage();
-    setupComplaintForm();
-    setupTracking();
-    updateDashboard();
-    setupMobileNav();
 });
