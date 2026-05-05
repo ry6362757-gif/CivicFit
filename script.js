@@ -358,14 +358,14 @@ function removeLoading() {
 
 async function sendToDeepSeek(userMessage) {
     try {
-        const response = await fetch(DEEPSEEK_API_URL, {
+        const response = await fetch(sk-68ac71336e5a4f9183f9035b220abb97, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+                'Authorization': `Bearer ${sk-68ac71336e5a4f9183f9035b220abb97}`
             },
             body: JSON.stringify({
-                model: 'deepseek-chat',
+                model: 'deepseek-chat',   // try 'deepseek-reasoner' if this fails
                 messages: [
                     { role: 'system', content: 'You are JansevaAI, the helpful assistant for CivicFit – a public grievance portal for Indian cities Nallasopara, Virar, Vasai, Mira Road, and Bhayandar. Help users with complaint filing, tracking, and civic issues. Keep responses friendly and concise.' },
                     { role: 'user', content: userMessage }
@@ -375,16 +375,24 @@ async function sendToDeepSeek(userMessage) {
             })
         });
 
+        // Log the full response for debugging (open the console in your browser)
+        console.log('API response status:', response.status);
         const data = await response.json();
+        console.log('API response data:', data);
+
         removeLoading();
+
         if (data.choices && data.choices[0]) {
             addMessage(data.choices[0].message.content, 'bot');
+        } else if (data.error) {
+            addMessage(`Error: ${data.error.message}`, 'bot');
         } else {
-            addMessage("I'm having trouble understanding. Please try again.", 'bot');
+            addMessage("Sorry, I didn't understand that response. Check the console for details.", 'bot');
         }
     } catch (error) {
         removeLoading();
-        addMessage("Sorry, I couldn't connect to JansevaAI. Please check your internet or API key.", 'bot');
+        console.error('Fetch error:', error);
+        addMessage("Network error. Please check your internet connection.", 'bot');
     }
 }
 
