@@ -3,193 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Complaint</title>
+    <title>File Complaint - CivicFit</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-        video { width: 100%; border-radius: 16px; background: #000; margin-top: 8px; }
-        .cam-btn { background: #2c3e66; }
-        .map-location { height: 300px; margin-top: 10px; border-radius: 20px; z-index: 1; }
-    </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="logo">Civic<span>Fit</span></div>
-        <div class="nav-links">
-            <a href="index.html">Home</a>
-            <a href="complaint.html" class="active">File Complaint</a>
-            <a href="track.html">Track</a>
-            <a href="dashboard.html">Dashboard</a>
+    <nav class="navbar scrolled" id="navbar">
+        <div class="nav-container">
+            <div class="logo"><div class="logo-icon"><i class="fas fa-city"></i><span class="logo-text">Civic<span class="logo-highlight">Fit</span></span></div></div>
+            <div class="nav-links" id="navLinks">
+                <a href="index.html"><i class="fas fa-home"></i> <span data-i18n="nav_home">Home</span></a>
+                <a href="complaint.html" class="active"><i class="fas fa-pen-alt"></i> <span data-i18n="nav_complaint">File Complaint</span></a>
+                <a href="track.html"><i class="fas fa-search-location"></i> <span data-i18n="nav_track">Track</span></a>
+                <a href="dashboard.html"><i class="fas fa-chart-line"></i> <span data-i18n="nav_dashboard">Dashboard</span></a>
+            </div>
+            <div class="lang-switcher">
+                <select id="languageSelect">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="hi">🇮🇳 हिन्दी</option>
+                    <option value="mr">🇮🇳 मराठी</option>
+                </select>
+            </div>
+            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
         </div>
-    </div>
-    <div class="container">
+    </nav>
+
+    <section class="complaint-page">
         <div class="complaint-container">
-            <h2><i class="fas fa-camera"></i> File a Complaint</h2>
+            <h2><i class="fas fa-pen-alt"></i> <span data-i18n="complaint_title">File a Complaint</span></h2>
+            <p class="subtitle" data-i18n="complaint_subtitle">Report an issue in any of our 5 cities</p>
             <form id="complaintForm">
                 <div class="form-group">
-                    <label>City</label>
+                    <label><span data-i18n="form_city">Select City</span> <span style="color:#e63946;">*</span></label>
                     <select id="city" required>
-                        <option value="">Select</option>
-                        <option>Nallasopara</option><option>Virar</option><option>Vasai</option>
-                        <option>Mira Road</option><option>Bhayandar</option>
+                        <option value="">-- <span data-i18n="choose_city">Choose City</span> --</option>
+                        <option value="Nallasopara">Nallasopara</option>
+                        <option value="Virar">Virar</option>
+                        <option value="Vasai">Vasai</option>
+                        <option value="Mira Road">Mira Road</option>
+                        <option value="Bhayandar">Bhayandar</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Category</label>
+                    <label><span data-i18n="form_category">Issue Category</span> <span style="color:#e63946;">*</span></label>
                     <select id="category" required>
-                        <option value="">Select</option>
-                        <option>Road Damage</option><option>Water Supply</option><option>Drainage</option>
-                        <option>Street Light</option><option>Garbage</option><option>Noise Pollution</option>
+                        <option value="">-- <span data-i18n="choose_category">Select Category</span> --</option>
+                        <option value="Road Damage">Road Damage / Potholes</option>
+                        <option value="Water Supply">Water Supply</option>
+                        <option value="Drainage">Drainage / Sewage</option>
+                        <option value="Street Light">Street Light</option>
+                        <option value="Garbage">Garbage Collection</option>
+                        <option value="Noise Pollution">Noise Pollution</option>
+                        <option value="Park Maintenance">Park Maintenance</option>
+                        <option value="Electricity">Electricity</option>
+                        <option value="Public Transport">Public Transport</option>
+                        <option value="Other">Other</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="description" rows="3" required></textarea>
+                    <label><span data-i18n="form_description">Description</span> <span style="color:#e63946;">*</span></label>
+                    <textarea id="description" placeholder="Describe the issue in detail..." required></textarea>
                 </div>
-
-                <!-- Live Camera -->
                 <div class="form-group">
-                    <label>Take a Photo</label>
-                    <video id="video" autoplay playsinline muted></video>
-                    <button type="button" id="startCam" class="cam-btn">Start Camera</button>
-                    <button type="button" id="captureBtn" disabled>Capture Photo</button>
-                    <div class="photo-preview" id="previewArea">
-                        <img id="capturedImg">
-                        <button type="button" id="removePhoto">Remove</button>
+                    <label><span data-i18n="form_photo">Proof Photo</span></label>
+                    <div class="photo-upload-area" id="photoUploadArea">
+                        <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;">
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <i class="fas fa-camera"></i>
+                            <span data-i18n="upload_text">Click or tap to take a photo</span>
+                        </div>
+                        <img id="photoPreview" style="display:none; max-width:100%; max-height:200px; border-radius:12px;">
+                        <button type="button" class="remove-photo-btn" id="removePhotoBtn" style="display:none;"><i class="fas fa-times"></i> Remove</button>
                     </div>
-                    <input type="hidden" id="photoData">
                 </div>
-
-                <!-- Location (Map) -->
-                <div class="form-group">
-                    <label>Click on map to set location</label>
-                    <div id="locationMap" class="map-location"></div>
-                    <button type="button" id="useGps">Use My GPS</button>
-                    <input type="hidden" id="lat">
-                    <input type="hidden" id="lng">
-                    <div id="locStatus" style="font-size:12px; margin-top:8px;">📍 No location set</div>
-                </div>
-
-                <button type="submit">Submit (gets 4-digit CID)</button>
+                <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> <span data-i18n="submit_btn">Submit Complaint</span></button>
             </form>
-            <div id="successMsg" style="margin-top:15px; display:none; background:#d4edda; padding:12px; border-radius:12px;"></div>
+            <div class="success-msg" id="successMessage" style="display:none;"></div>
+        </div>
+    </section>
+    <footer><p data-i18n="footer_text">© 2026 <strong>CivicFit</strong></p></footer>
+
+    <!-- JansevaAI Chatbot -->
+    <div class="chatbot-container" id="chatbotContainer">
+        <button class="chatbot-toggle" id="chatbotToggle"><i class="fas fa-comment-dots"></i> JansevaAI</button>
+        <div class="chatbot-window" id="chatbotWindow" style="display:none;">
+            <div class="chatbot-header"><span><i class="fas fa-robot"></i> JansevaAI</span><button class="chatbot-close" id="chatbotClose">&times;</button></div>
+            <div class="chatbot-messages" id="chatbotMessages"></div>
+            <div class="chatbot-input-area"><input type="text" id="chatbotInput" placeholder="Ask me anything..." /><button id="chatbotSend"><i class="fas fa-paper-plane"></i></button></div>
         </div>
     </div>
 
-    <script>
-        // CAMERA
-        let stream = null;
-        const video = document.getElementById('video');
-        const startCam = document.getElementById('startCam');
-        const captureBtn = document.getElementById('captureBtn');
-        const previewArea = document.getElementById('previewArea');
-        const capturedImg = document.getElementById('capturedImg');
-        const removePhoto = document.getElementById('removePhoto');
-        const photoData = document.getElementById('photoData');
-
-        startCam.onclick = async () => {
-            if (stream) stream.getTracks().forEach(t => t.stop());
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-                await video.play();
-                captureBtn.disabled = false;
-                startCam.disabled = true;
-                startCam.textContent = 'Camera Ready';
-            } catch(e) { alert('Camera denied'); }
-        };
-        captureBtn.onclick = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            const data = canvas.toDataURL('image/jpeg', 0.8);
-            capturedImg.src = data;
-            photoData.value = data;
-            previewArea.style.display = 'block';
-            captureBtn.textContent = 'Captured ✓';
-            setTimeout(() => captureBtn.textContent = 'Capture Photo', 1500);
-        };
-        removePhoto.onclick = () => {
-            photoData.value = '';
-            previewArea.style.display = 'none';
-        };
-
-        // MAP & LOCATION
-        let map, marker;
-        function initMap(lat=19.076, lng=72.877) {
-            if (map) map.remove();
-            map = L.map('locationMap').setView([lat, lng], 12);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-            marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-            marker.on('dragend', () => {
-                const pos = marker.getLatLng();
-                document.getElementById('lat').value = pos.lat;
-                document.getElementById('lng').value = pos.lng;
-                document.getElementById('locStatus').innerHTML = `📍 Location: ${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}`;
-            });
-            map.on('click', e => {
-                marker.setLatLng(e.latlng);
-                document.getElementById('lat').value = e.latlng.lat;
-                document.getElementById('lng').value = e.latlng.lng;
-                document.getElementById('locStatus').innerHTML = `📍 Location: ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
-            });
-        }
-        initMap();
-        document.getElementById('useGps').onclick = () => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-                    map.setView([lat, lng], 14);
-                    marker.setLatLng([lat, lng]);
-                    document.getElementById('lat').value = lat;
-                    document.getElementById('lng').value = lng;
-                    document.getElementById('locStatus').innerHTML = `📍 GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-                }, err => alert('GPS failed'));
-            } else alert('GPS not supported');
-        };
-
-        // SUBMIT
-        const form = document.getElementById('complaintForm');
-        const successDiv = document.getElementById('successMsg');
-        form.onsubmit = (e) => {
-            e.preventDefault();
-            const city = document.getElementById('city').value;
-            const category = document.getElementById('category').value;
-            const desc = document.getElementById('description').value.trim();
-            const photo = photoData.value;
-            const lat = document.getElementById('lat').value;
-            const lng = document.getElementById('lng').value;
-
-            if (!city || !category || !desc) return alert('Fill all fields');
-            if (!photo) return alert('Capture a photo');
-            if (!lat || !lng) return alert('Set location on map');
-
-            const cid = Math.floor(1000 + Math.random() * 9000).toString();
-            const complaint = {
-                cid, city, category, description: desc, photo,
-                lat: parseFloat(lat), lng: parseFloat(lng),
-                status: 'Pending',
-                timestamp: new Date().toISOString()
-            };
-            let all = JSON.parse(localStorage.getItem('civicfit') || '[]');
-            all.unshift(complaint);
-            localStorage.setItem('civicfit', JSON.stringify(all));
-            successDiv.style.display = 'block';
-            successDiv.innerHTML = `✅ Complaint submitted! Your CID: <strong>${cid}</strong><br>Use this on Track page.`;
-            form.reset();
-            removePhoto.click();
-            document.getElementById('lat').value = '';
-            document.getElementById('lng').value = '';
-            document.getElementById('locStatus').innerHTML = '📍 No location set';
-            if (marker) marker.setLatLng([19.076, 72.877]);
-            map.setView([19.076, 72.877], 12);
-            setTimeout(() => successDiv.style.display = 'none', 5000);
-        };
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
