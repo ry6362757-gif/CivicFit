@@ -3,57 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Dashboard - CivicFit</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>CivicFit - Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <nav class="navbar scrolled" id="navbar">
+    <nav class="navbar">
         <div class="nav-container">
-            <div class="logo"><div class="logo-icon"><i class="fas fa-city"></i><span class="logo-text">Civic<span class="logo-highlight">Fit</span></span></div></div>
-            <div class="nav-links" id="navLinks">
-                <a href="index.html"><i class="fas fa-home"></i> Home</a>
-                <a href="complaint.html"><i class="fas fa-pen-alt"></i> File Complaint</a>
-                <a href="track.html"><i class="fas fa-search-location"></i> Track</a>
-                <a href="dashboard.html" class="active"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <div class="logo"><i class="fas fa-city"></i> Civic<span>Fit</span></div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="complaint.html">File Complaint</a>
+                <a href="track.html">Track</a>
+                <a href="dashboard.html" class="active">Dashboard</a>
             </div>
-            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
         </div>
     </nav>
 
-    <section class="dashboard-page">
-        <div class="dashboard-container">
-            <div class="dashboard-header"><h1><i class="fas fa-tachometer-alt"></i> Live Civic Dashboard</h1></div>
-            <div class="stats-cards">
-                <div class="stats-card primary"><i class="fas fa-clipboard-list"></i><div><span class="stats-value" id="dashTotal">0</span><span class="stats-label">Total</span></div></div>
-                <div class="stats-card success"><i class="fas fa-check-circle"></i><div><span class="stats-value" id="dashResolved">0</span><span class="stats-label">Resolved</span></div></div>
-                <div class="stats-card warning"><i class="fas fa-exclamation-triangle"></i><div><span class="stats-value" id="dashPending">0</span><span class="stats-label">Pending</span></div></div>
+    <div class="dashboard-container">
+        <h2><i class="fas fa-chart-line"></i> Complaint Analytics Dashboard</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-ticket-alt"></i>
+                <h3 id="totalComplaints">0</h3>
+                <p>Total Complaints</p>
             </div>
-            <div class="charts-row">
-                <div class="chart-box"><h3>Complaints by Category</h3><div id="categoryChart" class="category-bars"></div></div>
-                <div class="chart-box"><h3>Risk Categories</h3><div class="risk-tags" id="riskTags"></div></div>
+            <div class="stat-card pending">
+                <i class="fas fa-clock"></i>
+                <h3 id="pendingCount">0</h3>
+                <p>Pending</p>
+            </div>
+            <div class="stat-card progress">
+                <i class="fas fa-spinner"></i>
+                <h3 id="progressCount">0</h3>
+                <p>In Progress</p>
+            </div>
+            <div class="stat-card resolved">
+                <i class="fas fa-check-circle"></i>
+                <h3 id="resolvedCount">0</h3>
+                <p>Resolved</p>
             </div>
         </div>
-    </section>
-    <footer><p>&copy; 2026 <strong>CivicFit</strong></p></footer>
-
-    <!-- JansevaAI Chatbot -->
-    <div class="chatbot-container" id="chatbotContainer">
-        <button class="chatbot-toggle" id="chatbotToggle"><i class="fas fa-comment-dots"></i> JansevaAI</button>
-        <div class="chatbot-window" id="chatbotWindow" style="display:none;">
-            <div class="chatbot-header">
-                <span><i class="fas fa-robot"></i> JansevaAI</span>
-                <button class="chatbot-close" id="chatbotClose">&times;</button>
+        <div class="charts-row">
+            <div class="chart-box">
+                <canvas id="statusChart"></canvas>
             </div>
-            <div class="chatbot-messages" id="chatbotMessages"></div>
-            <div class="chatbot-input-area">
-                <input type="text" id="chatbotInput" placeholder="Ask me anything..." />
-                <button id="chatbotSend"><i class="fas fa-paper-plane"></i></button>
+            <div class="chart-box">
+                <canvas id="cityChart"></canvas>
             </div>
+        </div>
+        <div class="chart-box full-width">
+            <canvas id="categoryChart"></canvas>
         </div>
     </div>
-
+    <footer><p>Live data from your complaints</p></footer>
     <script src="script.js"></script>
 </body>
 </html>
