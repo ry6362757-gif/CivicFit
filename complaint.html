@@ -3,566 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>File Complaint - CivicFit (Live Camera + CID)</title>
+    <title>CivicFit - File Complaint</title>
+    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #f0f2f5;
-        }
-        /* Navbar */
-        .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: white;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-            z-index: 1000;
-            transition: 0.3s;
-        }
-        .nav-container {
-            max-width: 1200px;
-            margin: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-        }
-        .logo-icon {
-            font-size: 1.6rem;
-            font-weight: 700;
-        }
-        .logo-icon i {
-            color: #2c3e66;
-        }
-        .logo-text {
-            color: #2c3e66;
-        }
-        .logo-highlight {
-            color: #e63946;
-        }
-        .nav-links a {
-            text-decoration: none;
-            margin-left: 25px;
-            color: #333;
-            font-weight: 500;
-            transition: 0.3s;
-        }
-        .nav-links a.active, .nav-links a:hover {
-            color: #e63946;
-        }
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            cursor: pointer;
-        }
-        .hamburger span {
-            width: 25px;
-            height: 3px;
-            background: #333;
-            margin: 3px 0;
-        }
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                background: white;
-                position: absolute;
-                top: 70px;
-                left: 0;
-                width: 100%;
-                padding: 20px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .nav-links a {
-                margin: 10px 0;
-            }
-            .nav-links.show {
-                display: flex;
-            }
-            .hamburger {
-                display: flex;
-            }
-        }
-        /* Complaint Page */
-        .complaint-page {
-            padding: 120px 20px 60px;
-            max-width: 800px;
-            margin: auto;
-        }
-        .complaint-container {
-            background: white;
-            border-radius: 28px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        }
-        h2 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            color: #666;
-            margin-bottom: 25px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 8px;
-        }
-        select, textarea, input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 16px;
-            font-family: inherit;
-            font-size: 14px;
-        }
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        /* Live Camera Section */
-        .camera-section {
-            margin-bottom: 20px;
-        }
-        .live-camera {
-            position: relative;
-            background: #000;
-            border-radius: 20px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-        video {
-            width: 100%;
-            display: block;
-            border-radius: 20px;
-        }
-        .camera-controls {
-            display: flex;
-            gap: 12px;
-            margin-top: 12px;
-            flex-wrap: wrap;
-        }
-        .cam-btn {
-            background: #2c3e66;
-            padding: 10px 18px;
-            border: none;
-            border-radius: 40px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .cam-btn:hover {
-            background: #1f2a46;
-        }
-        .capture-btn {
-            background: #e63946;
-        }
-        .capture-btn:hover {
-            background: #c1121f;
-        }
-        .photo-preview {
-            margin-top: 15px;
-            background: #f8f9fa;
-            border-radius: 20px;
-            padding: 12px;
-            text-align: center;
-        }
-        .photo-preview img {
-            max-width: 100%;
-            max-height: 180px;
-            border-radius: 16px;
-        }
-        .remove-photo-btn {
-            background: #6c757d;
-            margin-top: 8px;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 30px;
-            color: white;
-            cursor: pointer;
-        }
-        .submit-btn {
-            background: #e63946;
-            color: white;
-            border: none;
-            padding: 14px;
-            width: 100%;
-            border-radius: 40px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 10px;
-        }
-        .submit-btn:hover {
-            background: #c1121f;
-            transform: scale(0.98);
-        }
-        .success-msg {
-            margin-top: 20px;
-            padding: 15px;
-            background: #d4edda;
-            color: #155724;
-            border-radius: 16px;
-            text-align: center;
-        }
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #777;
-        }
-        /* Chatbot (JansevaAI) */
-        .chatbot-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        .chatbot-toggle {
-            background: #2c3e66;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        .chatbot-window {
-            position: absolute;
-            bottom: 70px;
-            right: 0;
-            width: 300px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-        .chatbot-header {
-            background: #2c3e66;
-            color: white;
-            padding: 12px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .chatbot-messages {
-            height: 250px;
-            overflow-y: auto;
-            padding: 10px;
-            background: #f9f9f9;
-        }
-        .chatbot-input-area {
-            display: flex;
-            border-top: 1px solid #ddd;
-        }
-        .chatbot-input-area input {
-            flex: 1;
-            border: none;
-            padding: 10px;
-            outline: none;
-        }
-        .chatbot-input-area button {
-            background: #e63946;
-            border: none;
-            color: white;
-            padding: 0 15px;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-    <nav class="navbar" id="navbar">
+    <nav class="navbar">
         <div class="nav-container">
-            <div class="logo"><div class="logo-icon"><i class="fas fa-city"></i><span class="logo-text">Civic<span class="logo-highlight">Fit</span></span></div></div>
-            <div class="nav-links" id="navLinks">
-                <a href="index.html"><i class="fas fa-home"></i> Home</a>
-                <a href="complaint.html" class="active"><i class="fas fa-pen-alt"></i> File Complaint</a>
-                <a href="track.html"><i class="fas fa-search-location"></i> Track</a>
-                <a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <div class="logo"><i class="fas fa-city"></i> Civic<span>Fit</span></div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="complaint.html" class="active">File Complaint</a>
+                <a href="track.html">Track</a>
+                <a href="dashboard.html">Dashboard</a>
             </div>
-            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
         </div>
     </nav>
 
     <section class="complaint-page">
         <div class="complaint-container">
             <h2><i class="fas fa-pen-alt"></i> File a Complaint</h2>
-            <p class="subtitle">Report an issue in any of our 5 cities</p>
+            <p class="subtitle">Live photo + map location → 4‑digit CID generated</p>
             <form id="complaintForm">
                 <div class="form-group">
-                    <label>Select City <span style="color:#e63946;">*</span></label>
+                    <label>Select City <span>*</span></label>
                     <select id="city" required>
                         <option value="">-- Choose City --</option>
-                        <option value="Nallasopara">Nallasopara</option>
-                        <option value="Virar">Virar</option>
-                        <option value="Vasai">Vasai</option>
-                        <option value="Mira Road">Mira Road</option>
-                        <option value="Bhayandar">Bhayandar</option>
+                        <option>Nallasopara</option><option>Virar</option><option>Vasai</option>
+                        <option>Mira Road</option><option>Bhayandar</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Issue Category <span style="color:#e63946;">*</span></label>
+                    <label>Issue Category <span>*</span></label>
                     <select id="category" required>
                         <option value="">-- Select Category --</option>
-                        <option value="Road Damage">Road Damage / Potholes</option>
-                        <option value="Water Supply">Water Supply</option>
-                        <option value="Drainage">Drainage / Sewage</option>
-                        <option value="Street Light">Street Light</option>
-                        <option value="Garbage">Garbage Collection</option>
-                        <option value="Noise Pollution">Noise Pollution</option>
-                        <option value="Park Maintenance">Park Maintenance</option>
-                        <option value="Electricity">Electricity</option>
-                        <option value="Public Transport">Public Transport</option>
-                        <option value="Other">Other</option>
+                        <option>Road Damage</option><option>Water Supply</option><option>Drainage</option>
+                        <option>Street Light</option><option>Garbage</option><option>Noise Pollution</option>
+                        <option>Park Maintenance</option><option>Electricity</option><option>Other</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Description <span style="color:#e63946;">*</span></label>
+                    <label>Description <span>*</span></label>
                     <textarea id="description" placeholder="Describe the issue in detail..." required></textarea>
                 </div>
 
-                <!-- REAL-TIME CAMERA SECTION -->
+                <!-- Live Camera -->
                 <div class="form-group">
-                    <label>Proof Photo (Live Camera) <span style="color:#e63946;">*</span></label>
-                    <div class="camera-section">
-                        <div class="live-camera">
-                            <video id="liveCamera" autoplay playsinline muted></video>
-                        </div>
-                        <div class="camera-controls">
-                            <button type="button" class="cam-btn" id="startCameraBtn"><i class="fas fa-video"></i> Start Camera</button>
-                            <button type="button" class="cam-btn capture-btn" id="capturePhotoBtn" disabled><i class="fas fa-camera"></i> Capture Photo</button>
-                        </div>
-                        <div class="photo-preview" id="photoPreviewArea" style="display:none;">
-                            <p><strong>Captured Photo:</strong></p>
-                            <img id="capturedPhotoImg" src="" alt="Captured">
-                            <button type="button" class="remove-photo-btn" id="removeCapturedBtn"><i class="fas fa-trash-alt"></i> Remove & Retake</button>
-                        </div>
-                        <input type="hidden" id="photoData64" value="">
+                    <label>Proof Photo (Live Camera) <span>*</span></label>
+                    <div class="live-camera">
+                        <video id="liveCamera" autoplay playsinline muted></video>
                     </div>
+                    <div class="camera-controls">
+                        <button type="button" class="cam-btn" id="startCameraBtn"><i class="fas fa-video"></i> Start Camera</button>
+                        <button type="button" class="cam-btn capture-btn" id="capturePhotoBtn" disabled><i class="fas fa-camera"></i> Capture Photo</button>
+                    </div>
+                    <div class="photo-preview" id="photoPreviewArea">
+                        <img id="capturedPhotoImg" src="">
+                        <button type="button" class="remove-photo-btn" id="removeCapturedBtn"><i class="fas fa-trash-alt"></i> Remove & Retake</button>
+                    </div>
+                    <input type="hidden" id="photoData64" value="">
                 </div>
 
-                <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Submit Complaint</button>
+                <!-- Location Picker -->
+                <div class="form-group">
+                    <label>Complaint Location (for heatmap) <span>*</span></label>
+                    <div id="locationMap" class="map-location"></div>
+                    <div class="location-buttons">
+                        <button type="button" id="getGpsLocation" class="cam-btn"><i class="fas fa-location-dot"></i> Use My Location</button>
+                    </div>
+                    <input type="hidden" id="complaintLat" value="">
+                    <input type="hidden" id="complaintLng" value="">
+                    <div id="locationStatus" class="location-status">📍 Click on map or use GPS</div>
+                </div>
+
+                <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Submit Complaint (4-digit CID)</button>
             </form>
-            <div class="success-msg" id="successMessage" style="display:none;"></div>
+            <div class="success-msg" id="successMessage"></div>
         </div>
     </section>
-    <footer><p>&copy; 2026 <strong>CivicFit</strong></p></footer>
-
-    <!-- JansevaAI Chatbot -->
-    <div class="chatbot-container" id="chatbotContainer">
-        <button class="chatbot-toggle" id="chatbotToggle"><i class="fas fa-comment-dots"></i> JansevaAI</button>
-        <div class="chatbot-window" id="chatbotWindow" style="display:none;">
-            <div class="chatbot-header">
-                <span><i class="fas fa-robot"></i> JansevaAI</span>
-                <button class="chatbot-close" id="chatbotClose">&times;</button>
-            </div>
-            <div class="chatbot-messages" id="chatbotMessages"><div class="bot-msg">Hello! I'm JansevaAI. Ask me about complaint status or civic issues.</div></div>
-            <div class="chatbot-input-area">
-                <input type="text" id="chatbotInput" placeholder="Ask me anything...">
-                <button id="chatbotSend"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ---------- LIVE CAMERA LOGIC ----------
-        let videoStream = null;
-        const video = document.getElementById('liveCamera');
-        const startBtn = document.getElementById('startCameraBtn');
-        const captureBtn = document.getElementById('capturePhotoBtn');
-        const previewArea = document.getElementById('photoPreviewArea');
-        const capturedImg = document.getElementById('capturedPhotoImg');
-        const removeBtn = document.getElementById('removeCapturedBtn');
-        const photoDataInput = document.getElementById('photoData64');
-
-        async function initCamera() {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-            }
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                videoStream = stream;
-                video.srcObject = stream;
-                await video.play();
-                captureBtn.disabled = false;
-                startBtn.textContent = '✅ Camera Active';
-                startBtn.disabled = true;
-            } catch (err) {
-                console.error("Camera error:", err);
-                alert("Camera access denied or not available. Please allow permissions and click 'Start Camera'.");
-                startBtn.disabled = false;
-                captureBtn.disabled = true;
-            }
-        }
-
-        function capturePhoto() {
-            if (!video.videoWidth) {
-                alert("Camera not ready. Please start camera first.");
-                return;
-            }
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const imageData = canvas.toDataURL('image/jpeg', 0.8);
-            capturedImg.src = imageData;
-            photoDataInput.value = imageData;
-            previewArea.style.display = 'block';
-            // Hide video preview while showing captured photo? Keep both optional
-            // But we'll keep video visible, user can retake.
-            captureBtn.textContent = '📸 Photo Captured ✓';
-            setTimeout(() => { captureBtn.textContent = 'Capture Photo'; }, 1500);
-        }
-
-        function removePhoto() {
-            photoDataInput.value = '';
-            previewArea.style.display = 'none';
-            capturedImg.src = '';
-            // Optionally restart camera fresh? no need, just remove captured data.
-        }
-
-        startBtn.addEventListener('click', initCamera);
-        captureBtn.addEventListener('click', capturePhoto);
-        removeBtn.addEventListener('click', removePhoto);
-
-        // ---------- CID GENERATION ----------
-        function generateCID() {
-            const now = new Date();
-            const datePart = now.toISOString().slice(0,10).replace(/-/g,'');
-            const random = Math.floor(Math.random() * 10000).toString().padStart(4,'0');
-            return `CID-${datePart}-${random}`;
-        }
-
-        // ---------- FORM SUBMIT (store locally + show CID) ----------
-        const complaintForm = document.getElementById('complaintForm');
-        const successDiv = document.getElementById('successMessage');
-
-        complaintForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            // Get values
-            const city = document.getElementById('city').value;
-            const category = document.getElementById('category').value;
-            const description = document.getElementById('description').value;
-            const photoBase64 = photoDataInput.value;
-
-            if (!city || !category || !description.trim()) {
-                alert("Please fill all required fields (City, Category, Description).");
-                return;
-            }
-            if (!photoBase64) {
-                alert("Please capture a photo using the live camera.");
-                return;
-            }
-
-            const cid = generateCID();
-            const complaintData = {
-                cid: cid,
-                city: city,
-                category: category,
-                description: description,
-                photo: photoBase64,
-                status: "Pending",
-                timestamp: new Date().toISOString()
-            };
-
-            // Store in localStorage (array of complaints)
-            let allComplaints = JSON.parse(localStorage.getItem('civicfit_complaints')) || [];
-            allComplaints.unshift(complaintData);
-            localStorage.setItem('civicfit_complaints', JSON.stringify(allComplaints));
-
-            // Show success message with CID
-            successDiv.style.display = 'block';
-            successDiv.innerHTML = `<i class="fas fa-check-circle"></i> Complaint filed successfully!<br>
-                                    <strong>CID: ${cid}</strong><br>
-                                    Use this ID to track your complaint on the Track page.`;
-            
-            // Reset form except camera? Optionally reset fields but keep camera active.
-            document.getElementById('city').value = '';
-            document.getElementById('category').value = '';
-            document.getElementById('description').value = '';
-            removePhoto();  // clear captured photo
-            // Optionally reset camera capture button state
-            captureBtn.disabled = false;
-            // Scroll to success message
-            successDiv.scrollIntoView({ behavior: 'smooth' });
-            
-            // Clear success message after 6 seconds
-            setTimeout(() => {
-                successDiv.style.display = 'none';
-            }, 6000);
-        });
-
-        // ---------- NAVBAR HAMBURGER ----------
-        const hamburger = document.getElementById('hamburger');
-        const navLinks = document.getElementById('navLinks');
-        hamburger.addEventListener('click', () => {
-            navLinks.classList.toggle('show');
-        });
-
-        // ---------- SIMPLE CHATBOT (JansevaAI) ----------
-        const toggleBtn = document.getElementById('chatbotToggle');
-        const chatbotWindow = document.getElementById('chatbotWindow');
-        const closeChat = document.getElementById('chatbotClose');
-        const sendBtn = document.getElementById('chatbotSend');
-        const chatInput = document.getElementById('chatbotInput');
-        const chatMessages = document.getElementById('chatbotMessages');
-
-        toggleBtn.addEventListener('click', () => {
-            chatbotWindow.style.display = chatbotWindow.style.display === 'none' ? 'block' : 'none';
-        });
-        closeChat.addEventListener('click', () => {
-            chatbotWindow.style.display = 'none';
-        });
-
-        function addBotMessage(msg) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'bot-msg';
-            msgDiv.style.margin = '8px 0';
-            msgDiv.innerHTML = `<i class="fas fa-robot"></i> ${msg}`;
-            chatMessages.appendChild(msgDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-        function addUserMessage(msg) {
-            const msgDiv = document.createElement('div');
-            msgDiv.style.textAlign = 'right';
-            msgDiv.style.margin = '8px 0';
-            msgDiv.innerHTML = `<i class="fas fa-user"></i> ${msg}`;
-            chatMessages.appendChild(msgDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-        sendBtn.addEventListener('click', () => {
-            const query = chatInput.value.trim();
-            if (!query) return;
-            addUserMessage(query);
-            chatInput.value = '';
-            // Simple response logic
-            if (query.toLowerCase().includes('cid') || query.toLowerCase().includes('track')) {
-                addBotMessage("You can track your complaint using the CID on our Track page. Each complaint gets a unique CID after submission.");
-            } else if (query.toLowerCase().includes('camera')) {
-                addBotMessage("Use the live camera above to capture a photo of the issue. Click 'Start Camera' and then 'Capture Photo'.");
-            } else {
-                addBotMessage("Thank you for reaching out. Please file a complaint with photo and we'll assign a CID for tracking.");
-            }
-        });
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendBtn.click();
-        });
-        
-        // Optional: Auto start camera hint
-        console.log("CivicFit ready — use live camera and get CID on submit.");
-    </script>
+    <footer><p>&copy; 2026 CivicFit</p></footer>
+    <script src="script.js"></script>
 </body>
 </html>
