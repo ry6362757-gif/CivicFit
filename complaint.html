@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>CivicFit - File Complaint</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -67,9 +67,9 @@
                     <input type="hidden" id="photoData64" value="">
                 </div>
 
-                <!-- Location Picker -->
+                <!-- Location Picker (Map) -->
                 <div class="form-group">
-                    <label>Complaint Location (for heatmap) <span>*</span></label>
+                    <label>Complaint Location (click on map) <span>*</span></label>
                     <div id="locationMap" class="map-location"></div>
                     <div class="location-buttons">
                         <button type="button" id="getGpsLocation" class="cam-btn"><i class="fas fa-location-dot"></i> Use My Location</button>
@@ -85,6 +85,150 @@
         </div>
     </section>
     <footer><p>&copy; 2026 CivicFit</p></footer>
-    <script src="script.js"></script>
+
+    <script>
+        // ---------- CAMERA ----------
+        let videoStream = null;
+        const video = document.getElementById('liveCamera');
+        const startBtn = document.getElementById('startCameraBtn');
+        const captureBtn = document.getElementById('capturePhotoBtn');
+        const previewArea = document.getElementById('photoPreviewArea');
+        const capturedImg = document.getElementById('capturedPhotoImg');
+        const removeBtn = document.getElementById('removeCapturedBtn');
+        const photoDataInput = document.getElementById('photoData64');
+
+        async function initCamera() {
+            if (videoStream) videoStream.getTracks().forEach(track => track.stop());
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                videoStream = stream;
+                video.srcObject = stream;
+                await video.play();
+                captureBtn.disabled = false;
+                startBtn.disabled = true;
+                startBtn.textContent = '✅ Camera Active';
+            } catch (err) {
+                alert("Camera access denied. Please allow permissions.");
+                captureBtn.disabled = true;
+            }
+        }
+
+        function capturePhoto() {
+            if (!video.videoWidth) return alert("Start camera first");
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const data = canvas.toDataURL('image/jpeg', 0.8);
+            capturedImg.src = data;
+            photoDataInput.value = data;
+            previewArea.style.display = 'block';
+        }
+
+        function removePhoto() {
+            photoDataInput.value = '';
+            previewArea.style.display = 'none';
+            capturedImg.src = '';
+        }
+
+        startBtn.addEventListener('click', initCamera);
+        captureBtn.addEventListener('click', capturePhoto);
+        removeBtn.addEventListener('click', removePhoto);
+
+        // ---------- LOCATION MAP ----------
+        let locationMap, locationMarker;
+        function initLocationMap(lat = 19.0760, lng = 72.8777) {
+            if (locationMap) locationMap.remove();
+            locationMap = L.map('locationMap').setView([lat, lng], 13);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(locationMap);
+            locationMarker = L.marker([lat, lng], { draggable: true }).addTo(locationMap);
+            locationMarker.on('dragend', function () {
+                const pos = locationMarker.getLatLng();
+                document.getElementById('complaintLat').value = pos.lat;
+                document.getElementById('complaintLng').value = pos.lng;
+                document.getElementById('locationStatus').innerHTML = `📍 Location set: ${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}`;
+            });
+            locationMap.on('click', function (e) {
+                locationMarker.setLatLng(e.latlng);
+                document.getElementById('complaintLat').value = e.latlng.lat;
+                document.getElementById('complaintLng').value = e.latlng.lng;
+                document.getElementById('locationStatus').innerHTML = `📍 Location set: ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+            });
+        }
+
+        function getGPSLocation() {
+            if (!navigator.geolocation) return alert("GPS not supported");
+            navigator.geolocation.getCurrentPosition(pos => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                locationMap.setView([lat, lng], 16);
+                locationMarker.setLatLng([lat, lng]);
+                document.getElementById('complaintLat').value = lat;
+                document.getElementById('complaintLng').value = lng;
+                document.getElementById('locationStatus').innerHTML = `📍 GPS location: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            }, err => alert("GPS error: " + err.message));
+        }
+
+        initLocationMap();
+        document.getElementById('getGpsLocation').addEventListener('click', getGPSLocation);
+
+        // ---------- FORM SUBMIT (4-digit CID) ----------
+        function generateCID() {
+            return Math.floor(1000 + Math.random() * 9000).toString();
+        }
+
+        function loadComplaints() {
+            const stored = localStorage.getItem('civicfit_complaints');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        const form = document.getElementById('complaintForm');
+        const successDiv = document.getElementById('successMessage');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const city = document.getElementById('city').value;
+            const category = document.getElementById('category').value;
+            const description = document.getElementById('description').value.trim();
+            const photo = photoDataInput.value;
+            const lat = document.getElementById('complaintLat').value;
+            const lng = document.getElementById('complaintLng').value;
+
+            if (!city || !category || !description) return alert("Fill all fields");
+            if (!photo) return alert("Capture a photo first");
+            if (!lat || !lng) return alert("Select location on map or use GPS");
+
+            const cid = generateCID();
+            const newComplaint = {
+                cid: cid,
+                city: city,
+                category: category,
+                description: description,
+                photo: photo,
+                lat: parseFloat(lat),
+                lng: parseFloat(lng),
+                status: "Pending",
+                timestamp: new Date().toISOString()
+            };
+
+            let all = loadComplaints();
+            all.unshift(newComplaint);
+            localStorage.setItem('civicfit_complaints', JSON.stringify(all));
+            window.dispatchEvent(new StorageEvent('storage', { key: 'civicfit_complaints', newValue: JSON.stringify(all) }));
+
+            successDiv.style.display = 'block';
+            successDiv.innerHTML = `<i class="fas fa-check-circle"></i> Complaint filed!<br><strong>Your 4‑digit CID: ${cid}</strong><br>Use this ID on Track page.`;
+            form.reset();
+            removePhoto();
+            document.getElementById('complaintLat').value = '';
+            document.getElementById('complaintLng').value = '';
+            document.getElementById('locationStatus').innerHTML = '📍 Click on map or use GPS';
+            if (locationMarker) locationMarker.setLatLng([19.0760, 72.8777]);
+            locationMap.setView([19.0760, 72.8777], 13);
+            setTimeout(() => successDiv.style.display = 'none', 5000);
+        });
+    </script>
 </body>
 </html>
