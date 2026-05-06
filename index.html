@@ -3,37 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CivicFit - Home</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>CivicFit Home</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo"><i class="fas fa-city"></i> Civic<span>Fit</span></div>
-            <div class="nav-links">
-                <a href="index.html" class="active"><i class="fas fa-home"></i> Home</a>
-                <a href="complaint.html"><i class="fas fa-pen-alt"></i> File Complaint</a>
-                <a href="track.html"><i class="fas fa-search-location"></i> Track</a>
-                <a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a>
-            </div>
+    <div class="navbar">
+        <div class="logo">Civic<span>Fit</span></div>
+        <div class="nav-links">
+            <a href="index.html" class="active">Home</a>
+            <a href="complaint.html">File Complaint</a>
+            <a href="track.html">Track</a>
         </div>
-    </nav>
-
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Report Civic Issues <span>Instantly</span></h1>
-            <p>Live camera • 4‑digit CID • Real‑time heatmap & dashboard</p>
-            <div class="hero-buttons">
-                <a href="complaint.html" class="btn primary"><i class="fas fa-camera"></i> File Complaint</a>
-                <a href="track.html" class="btn secondary"><i class="fas fa-map-marked-alt"></i> Track Heatmap</a>
-                <a href="dashboard.html" class="btn secondary"><i class="fas fa-chart-pie"></i> Dashboard</a>
-            </div>
+    </div>
+    <div class="container" style="text-align: center; margin-top: 80px;">
+        <h1>Report civic issues instantly</h1>
+        <p>Live camera • 4-digit CID • Heatmap tracking</p>
+        <div style="margin-top: 30px;">
+            <a href="complaint.html" style="background:#e63946; color:white; padding:12px 30px; border-radius:40px; text-decoration:none;">File Complaint</a>
+            <a href="track.html" style="background:#2c3e66; color:white; padding:12px 30px; border-radius:40px; text-decoration:none; margin-left:15px;">Track Heatmap</a>
         </div>
-    </section>
-
-    <footer><p>&copy; 2026 CivicFit – Your voice, our action.</p></footer>
-    <script src="script.js"></script>
+    </div>
 </body>
 </html>
