@@ -3,177 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track Complaints</title>
+    <title>Track Complaint - CivicFit</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
-    <style>
-        .track-container { display: flex; gap: 25px; flex-wrap: wrap; }
-        .map-panel { flex: 1.5; }
-        .list-panel { flex: 1; max-height: 80vh; overflow-y: auto; }
-        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
-        .search-box input { flex: 1; }
-        #heatmap { height: 500px; border-radius: 20px; background: #e9ecef; }
-        .complaint-card { margin-bottom: 15px; }
-    </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="logo">Civic<span>Fit</span></div>
-        <div class="nav-links">
-            <a href="index.html">Home</a>
-            <a href="complaint.html">File Complaint</a>
-            <a href="track.html" class="active">Track</a>
-            <a href="dashboard.html">Dashboard</a>
+    <nav class="navbar scrolled" id="navbar">
+        <div class="nav-container">
+            <div class="logo"><div class="logo-icon"><i class="fas fa-city"></i><span class="logo-text">Civic<span class="logo-highlight">Fit</span></span></div></div>
+            <div class="nav-links" id="navLinks">
+                <a href="index.html"><i class="fas fa-home"></i> <span data-i18n="nav_home">Home</span></a>
+                <a href="complaint.html"><i class="fas fa-pen-alt"></i> <span data-i18n="nav_complaint">File Complaint</span></a>
+                <a href="track.html" class="active"><i class="fas fa-search-location"></i> <span data-i18n="nav_track">Track</span></a>
+                <a href="dashboard.html"><i class="fas fa-chart-line"></i> <span data-i18n="nav_dashboard">Dashboard</span></a>
+            </div>
+            <div class="lang-switcher">
+                <select id="languageSelect">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="hi">🇮🇳 हिन्दी</option>
+                    <option value="mr">🇮🇳 मराठी</option>
+                </select>
+            </div>
+            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
         </div>
-    </div>
-    <div class="container">
+    </nav>
+
+    <section class="track-page">
         <div class="track-container">
-            <div class="map-panel">
-                <h2><i class="fas fa-fire"></i> Heatmap</h2>
-                <div id="heatmap"></div>
-                <div id="debug" class="debug"></div>
-                <p>🔴 Pending &nbsp; 🟠 In Progress &nbsp; 🟢 Resolved</p>
+            <h2><i class="fas fa-search-location"></i> <span data-i18n="track_title">Track Your Complaint</span></h2>
+            <p class="subtitle" data-i18n="track_subtitle">Enter your Complaint ID to see status, photo & live heatmap</p>
+            <div class="track-input-group">
+                <input type="text" id="trackIdInput" placeholder="e.g., CID-247952" />
+                <button id="trackBtn"><i class="fas fa-arrow-right"></i> <span data-i18n="track_btn">Track</span></button>
             </div>
-            <div class="list-panel">
-                <h2>Complaints</h2>
-                <div class="search-box">
-                    <input type="text" id="searchCID" placeholder="Search by CID (e.g., 1234)">
-                    <button id="searchBtn">Search</button>
-                    <button id="resetBtn">Reset</button>
-                </div>
-                <div id="complaintList"></div>
+            <div id="trackResult" style="display:none;">
+                <div class="complaint-details" id="complaintDetails"></div>
+                <div id="complaintPhoto" style="margin-bottom:20px;"></div>
+                <div class="progress-steps" id="progressSteps"></div>
+                <p class="track-note" id="trackNote"></p>
+                <div id="mapContainer" style="height: 350px; margin-top: 20px; border-radius: 12px; overflow: hidden;"></div>
+                <div class="live-badge"><span class="pulse"></span> <span data-i18n="live_update">Live updating every 10 seconds</span></div>
             </div>
+            <div id="trackError" class="error-msg" style="display:none;"></div>
+        </div>
+    </section>
+    <footer><p data-i18n="footer_text">© 2026 <strong>CivicFit</strong></p></footer>
+
+    <!-- JansevaAI Chatbot -->
+    <div class="chatbot-container" id="chatbotContainer">
+        <button class="chatbot-toggle" id="chatbotToggle"><i class="fas fa-comment-dots"></i> JansevaAI</button>
+        <div class="chatbot-window" id="chatbotWindow" style="display:none;">
+            <div class="chatbot-header"><span><i class="fas fa-robot"></i> JansevaAI</span><button class="chatbot-close" id="chatbotClose">&times;</button></div>
+            <div class="chatbot-messages" id="chatbotMessages"></div>
+            <div class="chatbot-input-area"><input type="text" id="chatbotInput" placeholder="Ask me anything..." /><button id="chatbotSend"><i class="fas fa-paper-plane"></i></button></div>
         </div>
     </div>
 
-    <script>
-        // Load data from localStorage (key = 'civicfit')
-        function loadData() {
-            return JSON.parse(localStorage.getItem('civicfit') || '[]');
-        }
-        function saveData(data) {
-            localStorage.setItem('civicfit', JSON.stringify(data));
-        }
-
-        let map, heatLayer;
-        let allComplaints = [];
-
-        // Initialize map (once)
-        function initMap() {
-            if (map) return;
-            map = L.map('heatmap').setView([19.076, 72.877], 11);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '© OSM'
-            }).addTo(map);
-        }
-
-        // Update heatmap with given complaints array
-        function updateHeatmap(complaints) {
-            initMap();
-            if (heatLayer) map.removeLayer(heatLayer);
-            const points = [];
-            complaints.forEach(c => {
-                if (c.lat && c.lng && typeof c.lat === 'number' && typeof c.lng === 'number') {
-                    let weight = 1.0;
-                    if (c.status === 'In Progress') weight = 0.6;
-                    if (c.status === 'Resolved') weight = 0.2;
-                    points.push([c.lat, c.lng, weight]);
-                }
-            });
-            const debug = document.getElementById('debug');
-            if (points.length === 0) {
-                debug.innerHTML = `⚠️ No location data. Filtered complaints: ${complaints.length}. Make sure complaints have lat/lng.`;
-                debug.style.background = '#fff3cd';
-                return;
-            }
-            debug.innerHTML = `✅ Heatmap showing ${points.length} points. Filtered complaints: ${complaints.length}.`;
-            debug.style.background = '#d4edda';
-            heatLayer = L.heatLayer(points, { radius: 30, blur: 20, minOpacity: 0.5 });
-            heatLayer.addTo(map);
-        }
-
-        // Render complaint list
-        function renderList(complaints) {
-            const container = document.getElementById('complaintList');
-            if (!complaints.length) {
-                container.innerHTML = '<p>No complaints found.</p>';
-                return;
-            }
-            let html = '';
-            complaints.forEach(c => {
-                html += `
-                    <div class="complaint-card">
-                        <strong>${c.category}</strong><br>
-                        <span class="cid">🆔 ${c.cid}</span><br>
-                        <small>${c.description.substring(0, 80)}</small><br>
-                        <small>📍 ${c.lat?.toFixed(4) || '?'}, ${c.lng?.toFixed(4) || '?'}</small><br>
-                        <small>${c.city} | ${new Date(c.timestamp).toLocaleString()}</small><br>
-                        <select class="status-select" data-cid="${c.cid}">
-                            <option ${c.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                            <option ${c.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                            <option ${c.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
-                        </select>
-                        <button class="delete-btn" data-cid="${c.cid}">Delete</button>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-
-            // Status change
-            document.querySelectorAll('.status-select').forEach(sel => {
-                sel.onchange = () => {
-                    const cid = sel.getAttribute('data-cid');
-                    const newStatus = sel.value;
-                    let all = loadData();
-                    const comp = all.find(x => x.cid === cid);
-                    if (comp) comp.status = newStatus;
-                    saveData(all);
-                    refreshUI(document.getElementById('searchCID').value);
-                };
-            });
-            // Delete
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.onclick = () => {
-                    const cid = btn.getAttribute('data-cid');
-                    let all = loadData();
-                    all = all.filter(x => x.cid !== cid);
-                    saveData(all);
-                    refreshUI(document.getElementById('searchCID').value);
-                };
-            });
-        }
-
-        // Core refresh: filter by CID, then update both list and heatmap
-        function refreshUI(searchTerm) {
-            allComplaints = loadData();
-            let filtered = allComplaints;
-            if (searchTerm && searchTerm.trim() !== '') {
-                filtered = allComplaints.filter(c => c.cid.includes(searchTerm.trim()));
-            }
-            renderList(filtered);
-            updateHeatmap(filtered);
-        }
-
-        // Search and reset listeners
-        const searchInput = document.getElementById('searchCID');
-        document.getElementById('searchBtn').onclick = () => refreshUI(searchInput.value);
-        document.getElementById('resetBtn').onclick = () => {
-            searchInput.value = '';
-            refreshUI('');
-        };
-        searchInput.onkeypress = (e) => { if (e.key === 'Enter') refreshUI(searchInput.value); };
-
-        // Initial load
-        refreshUI('');
-
-        // Listen for changes from complaint.html (cross-tab)
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'civicfit') refreshUI(searchInput.value);
-        });
-    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
