@@ -4,30 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CivicFit - Track Complaints</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+    <style>
+        /* Quick inline styles to ensure map is visible */
+        #heatmap { height: 500px; width: 100%; background: #e9ecef; border-radius: 20px; }
+        .track-container { max-width: 1400px; margin: 100px auto 30px; padding: 0 20px; display: flex; flex-wrap: wrap; gap: 25px; }
+        .map-panel { flex: 1.5; background: white; border-radius: 28px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .list-panel { flex: 1; background: white; border-radius: 28px; padding: 20px; max-height: 80vh; overflow-y: auto; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .search-box input { flex: 1; padding: 10px; border-radius: 30px; border: 1px solid #ddd; }
+        .search-box button { background: #2c3e66; border: none; padding: 10px 18px; border-radius: 30px; color: white; cursor: pointer; }
+        .complaint-card { background: #f9f9ff; border-radius: 20px; padding: 15px; margin-bottom: 15px; border-left: 4px solid #ff9800; }
+        .cid { font-family: monospace; background: #e9ecef; display: inline-block; padding: 2px 10px; border-radius: 30px; font-size: 12px; }
+        .status-select { margin-top: 10px; padding: 6px 12px; border-radius: 30px; border: 1px solid #ddd; }
+        .delete-complaint { background: #dc3545; color: white; border: none; padding: 4px 12px; border-radius: 30px; cursor: pointer; margin-left: 8px; }
+        .navbar { background: white; padding: 15px 25px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.6rem; font-weight: 700; color: #2c3e66; }
+        .logo span { color: #e63946; }
+        .nav-links a { text-decoration: none; margin-left: 25px; color: #333; font-weight: 500; }
+        .nav-links a.active { color: #e63946; }
+        footer { text-align: center; padding: 20px; color: #777; }
+        .debug-msg { background: #fff3cd; padding: 10px; border-radius: 12px; margin-bottom: 15px; font-size: 12px; }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo"><i class="fas fa-city"></i> Civic<span>Fit</span></div>
-            <div class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="complaint.html">File Complaint</a>
-                <a href="track.html" class="active">Track</a>
-                <a href="dashboard.html">Dashboard</a>
-            </div>
+    <div class="navbar">
+        <div class="logo">Civic<span>Fit</span></div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="complaint.html">File Complaint</a>
+            <a href="track.html" class="active">Track</a>
+            <a href="dashboard.html">Dashboard</a>
         </div>
-    </nav>
+    </div>
 
     <div class="track-container">
         <div class="map-panel">
             <h2><i class="fas fa-fire"></i> Heatmap (Intensity by status)</h2>
             <div id="heatmap"></div>
+            <div id="heatmapDebug" class="debug-msg" style="display:none;"></div>
             <p class="heatmap-legend">🔴 Pending (high) &nbsp; 🟠 In Progress (medium) &nbsp; 🟢 Resolved (low)</p>
         </div>
         <div class="list-panel">
@@ -41,6 +61,152 @@
         </div>
     </div>
     <footer><p>Real‑time tracking – change status to update heatmap instantly</p></footer>
-    <script src="script.js"></script>
+
+    <script>
+        // ========== LOAD DATA ==========
+        function loadComplaints() {
+            const stored = localStorage.getItem('civicfit_complaints');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        function saveComplaints(data) {
+            localStorage.setItem('civicfit_complaints', JSON.stringify(data));
+        }
+
+        let map, heatLayer;
+        let allComplaints = [];
+        let currentFiltered = [];
+
+        // ========== INIT MAP ==========
+        function initMap() {
+            if (map) return;
+            map = L.map('heatmap').setView([19.0760, 72.8777], 11); // Mumbai region
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+            }).addTo(map);
+            console.log("Map initialized");
+        }
+
+        // ========== UPDATE HEATMAP ==========
+        function updateHeatmap(complaintsArray) {
+            initMap();
+            const points = [];
+            complaintsArray.forEach(c => {
+                if (c.lat && c.lng && !isNaN(c.lat) && !isNaN(c.lng)) {
+                    let weight = 1.0;
+                    if (c.status === 'In Progress') weight = 0.6;
+                    if (c.status === 'Resolved') weight = 0.2;
+                    points.push([c.lat, c.lng, weight]);
+                }
+            });
+            console.log("Heatmap points:", points.length);
+            if (heatLayer) map.removeLayer(heatLayer);
+            if (points.length === 0) {
+                document.getElementById('heatmapDebug').innerHTML = "⚠️ No valid locations found. Submit complaints with location on map.";
+                document.getElementById('heatmapDebug').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('heatmapDebug').style.display = 'none';
+            }
+            heatLayer = L.heatLayer(points, { radius: 30, blur: 20, maxZoom: 15, minOpacity: 0.5 });
+            heatLayer.addTo(map);
+        }
+
+        // ========== RENDER LIST ==========
+        function renderList(complaintsArray) {
+            const container = document.getElementById('complaintList');
+            if (!complaintsArray.length) {
+                container.innerHTML = '<p>No complaints match your search.</p>';
+                return;
+            }
+            let html = '';
+            complaintsArray.forEach(c => {
+                let statusColor = c.status === 'Pending' ? '#ff9800' : (c.status === 'In Progress' ? '#17a2b8' : '#28a745');
+                html += `
+                    <div class="complaint-card" data-cid="${c.cid}">
+                        <strong><i class="fas fa-tag"></i> ${c.category}</strong><br>
+                        <span class="cid">🆔 ${c.cid}</span><br>
+                        <small>${c.description.substring(0, 80)}${c.description.length > 80 ? '...' : ''}</small><br>
+                        <small>📍 ${c.lat?.toFixed(5) || '?'}, ${c.lng?.toFixed(5) || '?'}</small><br>
+                        <small>🏙️ ${c.city} | 📅 ${new Date(c.timestamp).toLocaleString()}</small><br>
+                        <select class="status-select" data-cid="${c.cid}" style="background:${statusColor}20">
+                            <option ${c.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option ${c.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                            <option ${c.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                        </select>
+                        <button class="delete-complaint" data-cid="${c.cid}"><i class="fas fa-trash"></i> Delete</button>
+                        ${c.photo ? `<br><img src="${c.photo}" width="50" style="border-radius:8px; margin-top:5px;">` : ''}
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+
+            // Attach events
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', (e) => {
+                    const cid = select.getAttribute('data-cid');
+                    const newStatus = select.value;
+                    let all = loadComplaints();
+                    const complaint = all.find(c => c.cid === cid);
+                    if (complaint) {
+                        complaint.status = newStatus;
+                        saveComplaints(all);
+                        // Refresh everything
+                        allComplaints = loadComplaints();
+                        applySearch();
+                        // Dispatch storage event for other tabs
+                        window.dispatchEvent(new StorageEvent('storage', { key: 'civicfit_complaints', newValue: JSON.stringify(all) }));
+                    }
+                });
+            });
+            document.querySelectorAll('.delete-complaint').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const cid = btn.getAttribute('data-cid');
+                    let all = loadComplaints();
+                    all = all.filter(c => c.cid !== cid);
+                    saveComplaints(all);
+                    allComplaints = loadComplaints();
+                    applySearch();
+                    window.dispatchEvent(new StorageEvent('storage', { key: 'civicfit_complaints', newValue: JSON.stringify(all) }));
+                });
+            });
+        }
+
+        function applySearch() {
+            const searchTerm = document.getElementById('searchCID').value.trim();
+            let filtered = [...allComplaints];
+            if (searchTerm !== '') {
+                filtered = filtered.filter(c => c.cid.includes(searchTerm));
+            }
+            currentFiltered = filtered;
+            renderList(filtered);
+            updateHeatmap(filtered);
+        }
+
+        function refreshAll() {
+            allComplaints = loadComplaints();
+            applySearch();
+        }
+
+        // Event listeners
+        document.getElementById('searchBtn').addEventListener('click', applySearch);
+        document.getElementById('resetSearch').addEventListener('click', () => {
+            document.getElementById('searchCID').value = '';
+            applySearch();
+        });
+        document.getElementById('searchCID').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') applySearch();
+        });
+
+        // Initial load
+        refreshAll();
+
+        // Listen for changes from other tabs
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'civicfit_complaints') {
+                refreshAll();
+            }
+        });
+    </script>
 </body>
 </html>
