@@ -10,7 +10,7 @@ body {
     color: #1e2a5e;
 }
 
-/* ========== NAVBAR ========== */
+/* Navbar */
 .navbar {
     background: white;
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
@@ -48,7 +48,7 @@ body {
     color: #e63946;
 }
 
-/* ========== HERO (index) ========== */
+/* Hero section */
 .hero {
     min-height: 80vh;
     background: linear-gradient(135deg, #1e2a5e 0%, #2c3e66 100%);
@@ -65,10 +65,6 @@ body {
 .hero-content h1 span {
     color: #ffb347;
 }
-.hero-content p {
-    font-size: 1.2rem;
-    margin-bottom: 30px;
-}
 .hero-buttons .btn {
     display: inline-block;
     padding: 12px 30px;
@@ -76,7 +72,6 @@ body {
     border-radius: 40px;
     text-decoration: none;
     font-weight: 600;
-    transition: 0.3s;
 }
 .btn.primary {
     background: #e63946;
@@ -87,15 +82,10 @@ body {
     color: white;
     border: 2px solid white;
 }
-.btn.primary:hover {
-    background: #c1121f;
-    transform: scale(1.02);
-}
-.btn.secondary:hover {
-    background: rgba(255,255,255,0.2);
-}
+.btn.primary:hover { background: #c1121f; }
+.btn.secondary:hover { background: rgba(255,255,255,0.2); }
 
-/* ========== COMPLAINT FORM ========== */
+/* Complaint form */
 .complaint-page {
     padding: 100px 20px 50px;
     max-width: 900px;
@@ -123,31 +113,23 @@ h2 {
     display: block;
     margin-bottom: 8px;
 }
-.form-group label span {
-    color: #e63946;
-}
-select, textarea, input[type="text"] {
+.form-group label span { color: #e63946; }
+select, textarea, input {
     width: 100%;
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: 16px;
     font-family: inherit;
-    font-size: 14px;
 }
-textarea {
-    min-height: 100px;
-    resize: vertical;
-}
+textarea { min-height: 100px; resize: vertical; }
+
+/* Camera */
 .live-camera {
     background: #000;
     border-radius: 20px;
     overflow: hidden;
-    margin-top: 5px;
 }
-video {
-    width: 100%;
-    display: block;
-}
+video { width: 100%; display: block; }
 .camera-controls {
     display: flex;
     gap: 12px;
@@ -163,9 +145,7 @@ video {
     font-weight: 600;
     cursor: pointer;
 }
-.capture-btn {
-    background: #e63946;
-}
+.capture-btn { background: #e63946; }
 .photo-preview {
     margin-top: 15px;
     background: #f8f9fa;
@@ -188,14 +168,13 @@ video {
     cursor: pointer;
     margin-top: 8px;
 }
+
+/* Location map */
 .map-location {
     height: 260px;
     border-radius: 20px;
     margin-top: 8px;
     z-index: 1;
-}
-.location-buttons {
-    margin-top: 10px;
 }
 .location-status {
     font-size: 12px;
@@ -226,7 +205,7 @@ video {
     display: none;
 }
 
-/* ========== TRACK PAGE ========== */
+/* Track page */
 .track-container {
     max-width: 1400px;
     margin: 100px auto 30px;
@@ -253,6 +232,7 @@ video {
 #heatmap {
     height: 500px;
     border-radius: 20px;
+    background: #e9ecef;
 }
 .heatmap-legend {
     font-size: 12px;
@@ -286,7 +266,7 @@ video {
     margin-bottom: 15px;
     border-left: 4px solid #ff9800;
 }
-.complaint-card .cid {
+.cid {
     font-family: monospace;
     background: #e9ecef;
     display: inline-block;
@@ -310,8 +290,16 @@ video {
     cursor: pointer;
     margin-left: 8px;
 }
+.debug-msg {
+    background: #fff3cd;
+    padding: 10px;
+    border-radius: 12px;
+    margin: 10px 0;
+    font-size: 13px;
+    display: none;
+}
 
-/* ========== DASHBOARD ========== */
+/* Dashboard (optional) */
 .dashboard-container {
     max-width: 1300px;
     margin: 100px auto 30px;
@@ -330,17 +318,8 @@ video {
     text-align: center;
     box-shadow: 0 5px 12px rgba(0,0,0,0.05);
 }
-.stat-card i {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-    color: #2c3e66;
-}
-.stat-card h3 {
-    font-size: 2rem;
-}
-.stat-card.pending i { color: #ff9800; }
-.stat-card.progress i { color: #17a2b8; }
-.stat-card.resolved i { color: #28a745; }
+.stat-card i { font-size: 2.5rem; margin-bottom: 10px; color: #2c3e66; }
+.stat-card h3 { font-size: 2rem; }
 .charts-row {
     display: flex;
     flex-wrap: wrap;
@@ -354,14 +333,9 @@ video {
     border-radius: 28px;
     box-shadow: 0 5px 12px rgba(0,0,0,0.05);
 }
-.full-width {
-    width: 100%;
-}
-canvas {
-    max-height: 300px;
-}
+.full-width { width: 100%; }
+canvas { max-height: 300px; }
 
-/* ========== FOOTER ========== */
 footer {
     text-align: center;
     padding: 25px;
@@ -369,19 +343,9 @@ footer {
     margin-top: 30px;
 }
 
-/* ========== RESPONSIVE ========== */
 @media (max-width: 900px) {
-    .track-container, .charts-row {
-        flex-direction: column;
-    }
-    .hero-content h1 {
-        font-size: 2rem;
-    }
-    .nav-container {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .nav-links a {
-        margin: 0 10px;
-    }
+    .track-container, .charts-row { flex-direction: column; }
+    .hero-content h1 { font-size: 2rem; }
+    .nav-container { flex-direction: column; gap: 10px; }
+    .nav-links a { margin: 0 10px; }
 }
