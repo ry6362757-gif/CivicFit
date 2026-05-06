@@ -3,92 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CivicFit - Track (Fixed Heatmap)</title>
+    <title>CivicFit - Track Complaints</title>
+    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Leaflet + heatmap plugin -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: 'Poppins', sans-serif; background: #f4f7fc; }
-        .navbar { background: white; padding: 15px 25px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .logo { font-size: 1.6rem; font-weight: 700; color: #2c3e66; }
-        .logo span { color: #e63946; }
-        .nav-links a { text-decoration: none; margin-left: 25px; color: #333; font-weight: 500; }
-        .nav-links a.active { color: #e63946; }
-        .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; display: flex; flex-wrap: wrap; gap: 25px; }
-        .map-panel, .list-panel { background: white; border-radius: 28px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); flex: 1; }
-        .map-panel { flex: 1.5; }
-        #heatmap { height: 500px; border-radius: 20px; background: #e9ecef; }
-        .debug-box { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 12px; margin: 10px 0; font-size: 13px; }
-        .search-box { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .search-box input { flex: 1; padding: 10px; border-radius: 30px; border: 1px solid #ddd; }
-        .search-box button { background: #2c3e66; border: none; padding: 10px 18px; border-radius: 30px; color: white; cursor: pointer; }
-        .complaint-card { background: #f9f9ff; border-radius: 20px; padding: 15px; margin-bottom: 15px; border-left: 4px solid #ff9800; }
-        .cid { font-family: monospace; background: #e9ecef; display: inline-block; padding: 2px 10px; border-radius: 30px; font-size: 12px; }
-        footer { text-align: center; padding: 20px; color: #777; }
-        @media (max-width: 900px) { .container { flex-direction: column; } }
-    </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="logo">Civic<span>Fit</span></div>
-        <div class="nav-links">
-            <a href="index.html">Home</a>
-            <a href="complaint.html">File Complaint</a>
-            <a href="track.html" class="active">Track</a>
-            <a href="dashboard.html">Dashboard</a>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo"><i class="fas fa-city"></i> Civic<span>Fit</span></div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="complaint.html">File Complaint</a>
+                <a href="track.html" class="active">Track</a>
+                <a href="dashboard.html">Dashboard</a>
+            </div>
         </div>
-    </div>
+    </nav>
 
-    <div class="container">
+    <div class="track-container">
         <div class="map-panel">
-            <h2><i class="fas fa-fire"></i> Heatmap (by status)</h2>
+            <h2><i class="fas fa-fire"></i> Heatmap (intensity by status)</h2>
             <div id="heatmap"></div>
-            <div id="debugInfo" class="debug-box"></div>
+            <div id="debugInfo" class="debug-msg"></div>
+            <p class="heatmap-legend">🔴 Pending (high) &nbsp; 🟠 In Progress (medium) &nbsp; 🟢 Resolved (low)</p>
         </div>
         <div class="list-panel">
-            <h2><i class="fas fa-list"></i> Complaints</h2>
+            <h2><i class="fas fa-list"></i> All Complaints</h2>
             <div class="search-box">
-                <input type="text" id="searchCID" placeholder="Search by CID (e.g., 1234)">
-                <button id="searchBtn">Search</button>
-                <button id="resetBtn">Reset</button>
+                <input type="text" id="searchCID" placeholder="🔍 Search by 4-digit CID (e.g., 1234)">
+                <button id="searchBtn"><i class="fas fa-search"></i> Search</button>
+                <button id="resetBtn"><i class="fas fa-sync-alt"></i> Reset</button>
             </div>
             <div id="complaintList"></div>
         </div>
     </div>
-    <footer>Heatmap updates instantly – status changes affect intensity</footer>
+    <footer>Real‑time tracking – status changes update heatmap instantly</footer>
 
     <script>
-        // Helper to load data
+        // ========== HELPERS ==========
         function loadComplaints() {
-            const raw = localStorage.getItem('civicfit_complaints');
-            if (!raw) return [];
-            try {
-                return JSON.parse(raw);
-            } catch(e) { return []; }
+            const stored = localStorage.getItem('civicfit_complaints');
+            return stored ? JSON.parse(stored) : [];
         }
-
         function saveComplaints(data) {
             localStorage.setItem('civicfit_complaints', JSON.stringify(data));
         }
 
         let map, heatLayer;
         let allComplaints = [];
+        let currentFiltered = [];
 
-        // Initialize map
+        // ========== INIT MAP ==========
         function initMap() {
             if (map) return;
             map = L.map('heatmap').setView([19.0760, 72.8777], 11);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '© OpenStreetMap'
             }).addTo(map);
-            console.log("Map loaded");
         }
 
-        // Update heatmap with given complaints array
+        // ========== UPDATE HEATMAP ==========
         function updateHeatmap(complaintsArray) {
             initMap();
             const points = [];
@@ -100,81 +78,88 @@
                     points.push([c.lat, c.lng, weight]);
                 }
             });
-            console.log("Heatmap points:", points.length);
             if (heatLayer) map.removeLayer(heatLayer);
-            if (points.length > 0) {
-                heatLayer = L.heatLayer(points, { radius: 30, blur: 20, maxZoom: 15, minOpacity: 0.5 });
-                heatLayer.addTo(map);
-                document.getElementById('debugInfo').innerHTML = `✅ Heatmap active: ${points.length} location(s) plotted.`;
-            } else {
-                document.getElementById('debugInfo').innerHTML = `⚠️ No valid coordinates found. Please submit a complaint with a location (click on map in complaint form). Total complaints: ${complaintsArray.length}`;
+            const debugDiv = document.getElementById('debugInfo');
+            if (points.length === 0) {
+                debugDiv.innerHTML = '⚠️ No valid coordinates found. Please submit a complaint with a location (click on map in complaint form).';
+                debugDiv.style.display = 'block';
+                return;
             }
+            debugDiv.style.display = 'none';
+            heatLayer = L.heatLayer(points, { radius: 30, blur: 20, maxZoom: 15, minOpacity: 0.5 });
+            heatLayer.addTo(map);
         }
 
-        // Render complaint list
+        // ========== RENDER COMPLAINT LIST ==========
         function renderList(complaintsArray) {
             const container = document.getElementById('complaintList');
             if (!complaintsArray.length) {
-                container.innerHTML = '<p>No complaints found.</p>';
+                container.innerHTML = '<p>No complaints match your search.</p>';
                 return;
             }
             let html = '';
             complaintsArray.forEach(c => {
+                let statusColor = c.status === 'Pending' ? '#ff9800' : (c.status === 'In Progress' ? '#17a2b8' : '#28a745');
                 html += `
-                    <div class="complaint-card">
-                        <strong>${c.category}</strong><br>
+                    <div class="complaint-card" data-cid="${c.cid}">
+                        <strong><i class="fas fa-tag"></i> ${c.category}</strong><br>
                         <span class="cid">🆔 ${c.cid}</span><br>
-                        <small>${c.description.substring(0, 80)}</small><br>
-                        <small>📍 ${c.lat ? c.lat.toFixed(4) : 'no lat'}, ${c.lng ? c.lng.toFixed(4) : 'no lng'}</small><br>
-                        <small>${c.city} | ${new Date(c.timestamp).toLocaleString()}</small><br>
-                        <select class="status-select" data-cid="${c.cid}">
+                        <small>${c.description.substring(0, 80)}${c.description.length > 80 ? '...' : ''}</small><br>
+                        <small>📍 ${c.lat?.toFixed(5) || '?'}, ${c.lng?.toFixed(5) || '?'}</small><br>
+                        <small>🏙️ ${c.city} | 📅 ${new Date(c.timestamp).toLocaleString()}</small><br>
+                        <select class="status-select" data-cid="${c.cid}" style="background:${statusColor}20">
                             <option ${c.status === 'Pending' ? 'selected' : ''}>Pending</option>
                             <option ${c.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
                             <option ${c.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
                         </select>
-                        <button class="delete-btn" data-cid="${c.cid}">Delete</button>
+                        <button class="delete-complaint" data-cid="${c.cid}"><i class="fas fa-trash"></i> Delete</button>
+                        ${c.photo ? `<br><img src="${c.photo}" width="50" style="border-radius:8px; margin-top:5px;">` : ''}
                     </div>
                 `;
             });
             container.innerHTML = html;
 
-            // Status change events
+            // Attach status change events
             document.querySelectorAll('.status-select').forEach(select => {
                 select.addEventListener('change', (e) => {
                     const cid = select.getAttribute('data-cid');
                     const newStatus = select.value;
                     let all = loadComplaints();
-                    const comp = all.find(c => c.cid === cid);
-                    if (comp) {
-                        comp.status = newStatus;
+                    const complaint = all.find(c => c.cid === cid);
+                    if (complaint) {
+                        complaint.status = newStatus;
                         saveComplaints(all);
-                        refreshData();
+                        window.dispatchEvent(new StorageEvent('storage', { key: 'civicfit_complaints', newValue: JSON.stringify(all) }));
+                        refreshData(document.getElementById('searchCID').value);
                     }
                 });
             });
             // Delete events
-            document.querySelectorAll('.delete-btn').forEach(btn => {
+            document.querySelectorAll('.delete-complaint').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const cid = btn.getAttribute('data-cid');
                     let all = loadComplaints();
                     all = all.filter(c => c.cid !== cid);
                     saveComplaints(all);
-                    refreshData();
+                    window.dispatchEvent(new StorageEvent('storage', { key: 'civicfit_complaints', newValue: JSON.stringify(all) }));
+                    refreshData(document.getElementById('searchCID').value);
                 });
             });
         }
 
+        // ========== REFRESH DATA (search + heatmap) ==========
         function refreshData(searchTerm = '') {
             allComplaints = loadComplaints();
             let filtered = [...allComplaints];
             if (searchTerm.trim() !== '') {
                 filtered = filtered.filter(c => c.cid.includes(searchTerm.trim()));
             }
+            currentFiltered = filtered;
             renderList(filtered);
             updateHeatmap(filtered);
         }
 
-        // Search logic
+        // ========== EVENT LISTENERS ==========
         const searchInput = document.getElementById('searchCID');
         const searchBtn = document.getElementById('searchBtn');
         const resetBtn = document.getElementById('resetBtn');
@@ -191,7 +176,7 @@
         // Initial load
         refreshData('');
 
-        // Listen for changes from complaint.html (cross-tab)
+        // Cross-tab updates
         window.addEventListener('storage', (e) => {
             if (e.key === 'civicfit_complaints') {
                 refreshData(searchInput.value);
