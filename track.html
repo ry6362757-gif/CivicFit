@@ -21,7 +21,7 @@
         .map-panel, .list-panel { background: white; border-radius: 28px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); flex: 1; }
         .map-panel { flex: 1.5; }
         #heatmap { height: 500px; border-radius: 20px; background: #e9ecef; }
-        .debug-box { background: #e7f1ff; padding: 10px; border-radius: 12px; margin: 10px 0; font-size: 13px; }
+        .debug-box { background: #e7f1ff; padding: 10px; border-radius: 12px; margin: 10px 0; font-size: 13px; font-weight: 500; }
         .search-box { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .search-box input { flex: 1; padding: 10px; border-radius: 30px; border: 1px solid #ddd; }
         .search-box button { background: #2c3e66; border: none; padding: 10px 18px; border-radius: 30px; color: white; cursor: pointer; }
@@ -48,7 +48,7 @@
         <div class="map-panel">
             <h2><i class="fas fa-fire"></i> Heatmap (Intensity by status)</h2>
             <div id="heatmap"></div>
-            <div id="debugInfo" class="debug-box"></div>
+            <div id="debugInfo" class="debug-box">Loading...</div>
             <p class="heatmap-legend">🔴 Pending (high) &nbsp; 🟠 In Progress (medium) &nbsp; 🟢 Resolved (low)</p>
         </div>
         <div class="list-panel">
@@ -61,41 +61,41 @@
             <div id="complaintList"></div>
         </div>
     </div>
-    <footer>✅ Searching by CID updates both list and heatmap</footer>
+    <footer>✅ Search updates both list AND heatmap instantly</footer>
 
     <script>
-        // Load complaints from localStorage
+        // Helper functions
         function loadComplaints() {
             const raw = localStorage.getItem('civicfit_complaints');
-            if (!raw) return [];
-            try {
-                return JSON.parse(raw);
-            } catch(e) { return []; }
+            return raw ? JSON.parse(raw) : [];
         }
-
         function saveComplaints(data) {
             localStorage.setItem('civicfit_complaints', JSON.stringify(data));
         }
 
-        let map, heatLayer;
-        let allComplaints = [];
+        let map = null;
+        let currentHeatLayer = null;
 
-        // Initialize the map (once)
+        // Initialize map (only once)
         function initMap() {
             if (map) return;
             map = L.map('heatmap').setView([19.0760, 72.8777], 11);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '© OpenStreetMap'
             }).addTo(map);
-            console.log("Map initialized");
         }
 
-        // Update heatmap from given complaints array
-        function updateHeatmap(complaintsArray) {
+        // Clear existing heat layer and draw new one from given complaints
+        function refreshHeatmap(complaintsArray) {
             initMap();
+            // Remove old layer if exists
+            if (currentHeatLayer) {
+                map.removeLayer(currentHeatLayer);
+                currentHeatLayer = null;
+            }
+            // Build points
             const points = [];
             complaintsArray.forEach(c => {
-                // Check if lat/lng exist and are numbers
                 if (c.lat && c.lng && typeof c.lat === 'number' && typeof c.lng === 'number') {
                     let weight = 1.0;
                     if (c.status === 'In Progress') weight = 0.6;
@@ -103,27 +103,25 @@
                     points.push([c.lat, c.lng, weight]);
                 }
             });
-            // Remove old heat layer
-            if (heatLayer) map.removeLayer(heatLayer);
-            // Show debug info
+            // Update debug display
             const debugDiv = document.getElementById('debugInfo');
             if (points.length === 0) {
-                debugDiv.innerHTML = `⚠️ No valid location data for these complaints. Total complaints in filter: ${complaintsArray.length}.<br>Make sure you submit a complaint with a location (click on map in complaint form).`;
+                debugDiv.innerHTML = `⚠️ No valid locations for the current filter. Total complaints in filter: ${complaintsArray.length}. Make sure complaints have lat/lng (click map when submitting).`;
                 debugDiv.style.background = '#fff3cd';
                 return;
             }
-            debugDiv.innerHTML = `✅ Heatmap active: ${points.length} location(s) plotted.`;
+            debugDiv.innerHTML = `✅ Heatmap active: ${points.length} location(s) plotted. Filter shows ${complaintsArray.length} complaint(s).`;
             debugDiv.style.background = '#d4edda';
-            // Add heat layer
-            heatLayer = L.heatLayer(points, { radius: 30, blur: 20, minOpacity: 0.5 });
-            heatLayer.addTo(map);
+            // Create new heat layer
+            currentHeatLayer = L.heatLayer(points, { radius: 30, blur: 20, minOpacity: 0.5 });
+            currentHeatLayer.addTo(map);
         }
 
-        // Render the list of complaints
+        // Render complaint list
         function renderList(complaintsArray) {
             const container = document.getElementById('complaintList');
             if (!complaintsArray.length) {
-                container.innerHTML = '<p>No complaints found.</p>';
+                container.innerHTML = '<p>No complaints match.</p>';
                 return;
             }
             let html = '';
@@ -146,65 +144,71 @@
             });
             container.innerHTML = html;
 
-            // Status change events
+            // Status change
             document.querySelectorAll('.status-select').forEach(sel => {
                 sel.addEventListener('change', (e) => {
                     const cid = sel.getAttribute('data-cid');
                     const newStatus = sel.value;
                     let all = loadComplaints();
-                    const comp = all.find(c => c.cid === cid);
-                    if (comp) {
-                        comp.status = newStatus;
+                    const complaint = all.find(c => c.cid === cid);
+                    if (complaint) {
+                        complaint.status = newStatus;
                         saveComplaints(all);
-                        // Refresh everything while keeping current search
-                        refreshData(document.getElementById('searchCID').value);
+                        // Refresh everything with current search
+                        const searchTerm = document.getElementById('searchCID').value;
+                        filterAndUpdate(searchTerm);
                     }
                 });
             });
-            // Delete events
+            // Delete
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const cid = btn.getAttribute('data-cid');
                     let all = loadComplaints();
                     all = all.filter(c => c.cid !== cid);
                     saveComplaints(all);
-                    refreshData(document.getElementById('searchCID').value);
+                    const searchTerm = document.getElementById('searchCID').value;
+                    filterAndUpdate(searchTerm);
                 });
             });
         }
 
-        // Core function: filter complaints by CID (partial match), update list AND heatmap
-        function refreshData(searchTerm = '') {
-            allComplaints = loadComplaints();
-            let filtered = [...allComplaints];
-            if (searchTerm.trim() !== '') {
-                filtered = filtered.filter(c => c.cid.includes(searchTerm.trim()));
+        // Core filter + update both list and heatmap
+        function filterAndUpdate(searchTerm) {
+            const all = loadComplaints();
+            let filtered = all;
+            if (searchTerm && searchTerm.trim() !== '') {
+                filtered = all.filter(c => c.cid.includes(searchTerm.trim()));
             }
+            // Update list
             renderList(filtered);
-            updateHeatmap(filtered);
+            // Update heatmap with filtered complaints
+            refreshHeatmap(filtered);
         }
 
-        // Wire up search and reset buttons
+        // Event listeners
         const searchInput = document.getElementById('searchCID');
         const searchBtn = document.getElementById('searchBtn');
         const resetBtn = document.getElementById('resetBtn');
 
-        searchBtn.addEventListener('click', () => refreshData(searchInput.value));
+        searchBtn.addEventListener('click', () => {
+            filterAndUpdate(searchInput.value);
+        });
         resetBtn.addEventListener('click', () => {
             searchInput.value = '';
-            refreshData('');
+            filterAndUpdate('');
         });
         searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') refreshData(searchInput.value);
+            if (e.key === 'Enter') filterAndUpdate(searchInput.value);
         });
 
         // Initial load
-        refreshData('');
+        filterAndUpdate('');
 
-        // Listen for changes from complaint.html (cross-tab)
+        // Listen to changes from other tabs
         window.addEventListener('storage', (e) => {
             if (e.key === 'civicfit_complaints') {
-                refreshData(searchInput.value);
+                filterAndUpdate(searchInput.value);
             }
         });
     </script>
