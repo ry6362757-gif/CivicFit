@@ -3,28 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CivicFit Home</title>
+    <title>CivicFit – Bridge Public Problems & Government</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="navbar">
-        <div class="logo">Civic<span>Fit</span></div>
-        <div class="nav-links">
-            <a href="index.html" class="active">Home</a>
-            <a href="complaint.html">File Complaint</a>
-            <a href="track.html">Track</a>
-            <a href="dashboard.html">Dashboard</a>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-city"></i>
+                    <span class="logo-text">Civic<span class="logo-highlight">Fit</span></span>
+                </div>
+            </div>
+            <div class="nav-links" id="navLinks">
+                <a href="index.html" class="active"><i class="fas fa-home"></i> <span data-i18n="nav_home">Home</span></a>
+                <a href="complaint.html"><i class="fas fa-pen-alt"></i> <span data-i18n="nav_complaint">File Complaint</span></a>
+                <a href="track.html"><i class="fas fa-search-location"></i> <span data-i18n="nav_track">Track</span></a>
+                <a href="dashboard.html"><i class="fas fa-chart-line"></i> <span data-i18n="nav_dashboard">Dashboard</span></a>
+            </div>
+            <div class="lang-switcher">
+                <select id="languageSelect">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="hi">🇮🇳 हिन्दी</option>
+                    <option value="mr">🇮🇳 मराठी</option>
+                </select>
+            </div>
+            <div class="hamburger" id="hamburger">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-badge"><i class="fas fa-check-circle"></i> <span data-i18n="hero_badge">Official Public Grievance Portal</span></div>
+            <h1 data-i18n="hero_title">Make Your City <span class="gradient-text">CivicFit</span></h1>
+            <p data-i18n="hero_subtitle">Report issues in <strong>Nallasopara, Virar, Vasai, Mira Road & Bhayandar</strong> and track them in real‑time.</p>
+            <div class="hero-buttons">
+                <a href="complaint.html" class="btn btn-primary"><i class="fas fa-plus-circle"></i> <span data-i18n="hero_btn_complaint">File a Complaint</span></a>
+                <a href="dashboard.html" class="btn btn-secondary"><i class="fas fa-map-marked-alt"></i> <span data-i18n="hero_btn_dashboard">Live Dashboard</span></a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item"><span class="stat-number" id="totalComplaints">0</span><span class="stat-label" data-i18n="stat_total">Total</span></div>
+                <div class="stat-item"><span class="stat-number" id="resolvedCount">0</span><span class="stat-label" data-i18n="stat_resolved">Resolved</span></div>
+                <div class="stat-item"><span class="stat-number" id="pendingCount">0</span><span class="stat-label" data-i18n="stat_pending">Pending</span></div>
+            </div>
+        </div>
+        <div class="hero-wave">
+            <svg viewBox="0 0 1440 120"><path fill="#f4f6f9" d="M0,64L48,80C96,96,192,128,288,122.7C384,117,480,75,576,58.7C672,43,768,53,864,69.3C960,85,1056,107,1152,101.3C1248,96,1344,64,1392,48L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/></svg>
+        </div>
+    </section>
+
+    <section class="how-it-works">
+        <div class="section-header">
+            <h2 data-i18n="how_title">How CivicFit Works</h2>
+            <p data-i18n="how_subtitle">4 simple steps to a better city</p>
+        </div>
+        <div class="steps-container">
+            <div class="step-card">
+                <div class="step-icon"><i class="fas fa-file-signature"></i></div>
+                <h3 data-i18n="step1_title">1. File Complaint</h3>
+                <p data-i18n="step1_desc">Submit with photo proof & get a unique Complaint ID.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-icon"><i class="fas fa-id-card"></i></div>
+                <h3 data-i18n="step2_title">2. Track Progress</h3>
+                <p data-i18n="step2_desc">See your complaint status & real‑time heatmap.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-icon"><i class="fas fa-tasks"></i></div>
+                <h3 data-i18n="step3_title">3. Govt Action</h3>
+                <p data-i18n="step3_desc">Authorities resolve issues efficiently.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                <h3 data-i18n="step4_title">4. Resolution</h3>
+                <p data-i18n="step4_desc">City becomes CivicFit!</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="city-highlights">
+        <div class="section-header">
+            <h2 data-i18n="cities_title">Coverage Areas</h2>
+            <p data-i18n="cities_subtitle">Complaint density for all 5 cities</p>
+        </div>
+        <div class="city-cards" id="cityCardsContainer"></div>
+        <div class="color-legend">
+            <span class="legend-item"><span class="legend-dot red-dot"></span> <span data-i18n="legend_high">High</span></span>
+            <span class="legend-item"><span class="legend-dot yellow-dot"></span> <span data-i18n="legend_medium">Medium</span></span>
+            <span class="legend-item"><span class="legend-dot blue-dot"></span> <span data-i18n="legend_low">Low</span></span>
+        </div>
+    </section>
+
+    <footer><p data-i18n="footer_text">&copy; 2026 <strong>CivicFit</strong> — Making Cities Fit for Citizens</p></footer>
+
+    <!-- JansevaAI Chatbot -->
+    <div class="chatbot-container" id="chatbotContainer">
+        <button class="chatbot-toggle" id="chatbotToggle"><i class="fas fa-comment-dots"></i> JansevaAI</button>
+        <div class="chatbot-window" id="chatbotWindow" style="display:none;">
+            <div class="chatbot-header">
+                <span><i class="fas fa-robot"></i> JansevaAI</span>
+                <button class="chatbot-close" id="chatbotClose">&times;</button>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages"></div>
+            <div class="chatbot-input-area">
+                <input type="text" id="chatbotInput" placeholder="Ask me anything..." />
+                <button id="chatbotSend"><i class="fas fa-paper-plane"></i></button>
+            </div>
         </div>
     </div>
-    <div class="container" style="text-align: center; margin-top: 80px;">
-        <h1>Report civic issues instantly</h1>
-        <p>Live camera • 4-digit CID • Heatmap tracking</p>
-        <div style="margin-top: 30px;">
-            <a href="complaint.html" style="background:#e63946; color:white; padding:12px 30px; border-radius:40px; text-decoration:none;">File Complaint</a>
-            <a href="track.html" style="background:#2c3e66; color:white; padding:12px 30px; border-radius:40px; text-decoration:none; margin-left:15px;">Track Heatmap</a>
-        </div>
-    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
