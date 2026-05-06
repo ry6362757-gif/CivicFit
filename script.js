@@ -156,11 +156,12 @@ if (document.getElementById('complaintForm')) {
     });
 }
 
-// ========== TRACK PAGE (Heatmap + List + Search) ==========
+// ========== TRACK PAGE (Heatmap + List + Search with Heatmap Update) ==========
 if (document.getElementById('heatmap')) {
     let mapHeat;
     let heatLayer;
-    let currentComplaints = [];
+    let allComplaints = [];
+    let currentFiltered = [];
 
     function initHeatmap() {
         if (mapHeat) return;
@@ -189,7 +190,7 @@ if (document.getElementById('heatmap')) {
     function renderComplaintList(complaintsArray) {
         const container = document.getElementById('complaintList');
         if (!complaintsArray.length) {
-            container.innerHTML = '<p>No complaints yet. Go file one!</p>';
+            container.innerHTML = '<p>No complaints match your search.</p>';
             return;
         }
         let html = '';
@@ -225,7 +226,8 @@ if (document.getElementById('heatmap')) {
                     complaint.status = newStatus;
                     saveComplaints();
                     window.dispatchEvent(new StorageEvent('storage', { key: 'civicfit_complaints', newValue: JSON.stringify(all) }));
-                    loadTrackData();
+                    // Reload track data keeping current search filter
+                    applySearch();
                 }
             });
         });
@@ -237,41 +239,49 @@ if (document.getElementById('heatmap')) {
                 all = all.filter(c => c.cid !== cid);
                 saveComplaints();
                 window.dispatchEvent(new StorageEvent('storage', { key: 'civicfit_complaints', newValue: JSON.stringify(all) }));
-                loadTrackData();
+                applySearch();
             });
         });
     }
 
-    function loadTrackData(searchCID = '') {
-        let all = loadComplaints();
-        if (searchCID) {
-            all = all.filter(c => c.cid.includes(searchCID));
+    function applySearch() {
+        const searchValue = document.getElementById('searchCID').value.trim();
+        let filtered = [...allComplaints];
+        if (searchValue !== '') {
+            filtered = filtered.filter(c => c.cid.includes(searchValue));
         }
-        currentComplaints = all;
-        renderComplaintList(all);
-        updateHeatmap(all);
+        currentFiltered = filtered;
+        renderComplaintList(filtered);
+        updateHeatmap(filtered);  // 🔥 THIS FIXES THE HEATMAP UPDATE ON SEARCH
     }
 
-    // Search functionality
+    function loadTrackData() {
+        allComplaints = loadComplaints();
+        applySearch();
+    }
+
+    // Search event listeners
     const searchInput = document.getElementById('searchCID');
     const searchBtn = document.getElementById('searchBtn');
     const resetBtn = document.getElementById('resetSearch');
 
     searchBtn.addEventListener('click', () => {
-        const cid = searchInput.value.trim();
-        loadTrackData(cid);
+        applySearch();
     });
     resetBtn.addEventListener('click', () => {
-        searchInput.value = '';
-        loadTrackData('');
+        document.getElementById('searchCID').value = '';
+        applySearch();
+    });
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') applySearch();
     });
 
-    loadTrackData('');
+    loadTrackData();
 
     // Real-time cross-tab update
     window.addEventListener('storage', (e) => {
         if (e.key === 'civicfit_complaints') {
-            loadTrackData(searchInput.value.trim());
+            loadTrackData();
         }
     });
 }
@@ -343,6 +353,3 @@ if (document.getElementById('statusChart')) {
     updateDashboard();
     window.addEventListener('storage', () => updateDashboard());
 }
-
-// ========== NAVBAR HAMBURGER (if needed) ==========
-// Not implemented here because desktop-first but can be added easily.
