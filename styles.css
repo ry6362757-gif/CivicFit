@@ -70,3 +70,28 @@ button {
 }
 .cid { background: #e9ecef; padding: 2px 8px; border-radius: 20px; font-size: 12px; }
 .debug { background: #e7f1ff; padding: 10px; border-radius: 12px; margin: 10px 0; font-size: 13px; }
+
+/* Dashboard styles */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+.stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 28px;
+    text-align: center;
+    box-shadow: 0 5px 12px rgba(0,0,0,0.05);
+}
+.stat-card i { font-size: 2.5rem; margin-bottom: 10px; color: #2c3e66; }
+.stat-card h3 { font-size: 2rem; margin: 10px 0; }
+.chart-card {
+    background: white;
+    padding: 20px;
+    border-radius: 28px;
+    box-shadow: 0 5px 12px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
+}
+.chart-card canvas { max-height: 300px; width: 100% !important; }
